@@ -70,4 +70,6 @@ depend: $(SRCS)
 
 # DO NOT DELETE THIS LINE -- make depend needs it
 
-rps.o: /usr/include/stdio.h /usr/include/stdlib.h
+rps.o: /usr/include/stdio.h /usr/include/stdlib.h /usr/include/ctype.h
+rps.o: /usr/include/features.h /usr/include/stdc-predef.h
+rps.o: /usr/include/endian.h /usr/include/time.h
