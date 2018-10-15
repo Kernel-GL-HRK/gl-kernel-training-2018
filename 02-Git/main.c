@@ -54,7 +54,22 @@ static enum game_states check_choices(enum items user_choice, enum items ai_choi
  	return GAME_STATES_LOSE;
 }
 
-static void print_game_state_msg( enum game_states state)
+static void print_choice(enum items choice)
+{
+	switch(choice) {
+	case ITEMS_ROCK:
+		printf("rock\n");
+	break;
+	case ITEMS_PAPER:
+		printf("paper\n");
+	break;
+	case ITEMS_SCISSORS:
+		printf("scissors\n");
+	break;
+	};
+}
+
+static void print_game_state_msg(enum game_states state)
 {
 	switch( state ) {
 	case GAME_STATES_WIN:
@@ -79,9 +94,16 @@ void start_game(void)
 	printf("Please make your choise: r(rock), p(paper), s(scissors)!\n");
 	
 	user_choice = get_user_choice();
+	printf("User choose ");
+	print_choice(user_choice);
+	
 	ai_choice = get_ai_choice();
+	printf("Ai choose ");
+	print_choice(ai_choice);
 	state = check_choices(user_choice, ai_choice);
+	
 	print_game_state_msg(state);
+	
 }
 
 
