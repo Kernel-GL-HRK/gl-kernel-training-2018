@@ -1,4 +1,4 @@
-CC := g++
+CC := gcc
 CFLAGS := -Wall -g
 BIN := bin
 TARGET := $(BIN)/lesson02
