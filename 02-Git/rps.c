@@ -11,13 +11,14 @@
 //	SCISSORS
 //};
 
+// type for player turn selection store and handling
 typedef int RPS;
 #define ERROR		0
 #define ROCK		1
 #define PAPER		2
 #define SCISSORS	3
 
-
+// represent RPS as string for dialog
 const char *RPS_AsString(RPS v)
 {
 	switch (v) {
@@ -29,7 +30,8 @@ const char *RPS_AsString(RPS v)
 }
 
 // Function CompareRPS
-// compares to RPS values and returns:
+// compares two RPS values according to game rules
+// return value:
 //   0 - values are equal, result draw;
 //   1 - first value wins
 //   2 - second value wins
@@ -51,7 +53,7 @@ int CompareRPS(RPS v1, RPS v2)
 	return -1;
 }
 
-
+// get human turn choise (from input)
 RPS GetHumanChoise(void)
 {
 	char inp_buff[32];
@@ -69,6 +71,7 @@ RPS GetHumanChoise(void)
 	return ERROR;
 }
 
+// get machine turn choise (from random generator)
 RPS GetMachineChoise(void)
 {
 	int r = rand() % 3;
@@ -80,6 +83,7 @@ RPS GetMachineChoise(void)
 	return SCISSORS;
 }
 
+// print game results after each round (to stdout)
 void PrintResult(RPS h, RPS m, int res)
 {
 	const char *hs = RPS_AsString(h);
@@ -97,21 +101,29 @@ void PrintResult(RPS h, RPS m, int res)
 
 int main(int argc, char *argv[])
 {
+	// Init Random Generator
 	srand((unsigned)time(NULL));
+	// Game Title
 	printf("Hello from Rock-Paper-Scissors Terminal Game!\n");
+	// Total score storing
 	int Human = 0;
 	int Machine = 0;
+	// Round Loop
 	for (;;) {
 		RPS h = GetHumanChoise();
-		if (h == ERROR) break;
+		if (h == ERROR) break; // human want to stop
 		RPS m = GetMachineChoise();
-		if (m == ERROR) break;
+		if (m == ERROR) break; // maybe machine don't want to play more ?
+		// calc round result
 		int res = CompareRPS(h, m);
 		if (res < 0) break;
+		// and show it
 		PrintResult(h, m, res);
+		// get total score
 		if (res == 1) Human++;
 		else if (res == 2) Machine++;
 	}
+	// show final score before exit
 	printf("Game is over. Final score is: Human:%u / Machine:%u. Bye!", Human, Machine);
 	return 0;
 }
