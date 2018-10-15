@@ -82,7 +82,6 @@ void start_game(void)
 	ai_choice = get_ai_choice();
 	state = check_choices(user_choice, ai_choice);
 	print_game_state_msg(state);
-	
 }
 
 
