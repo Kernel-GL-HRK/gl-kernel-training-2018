@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-char read_user(){
+char read_user() {
 	printf("Please choose: rock (r) - paper (p) - scissors (s)\n");
 	char user;
 	while(user != 'r' && user != 'p' && user != 's')
@@ -11,7 +11,7 @@ char read_user(){
 	return user;
 } 
 
-char rnd(){
+char rnd() {
 	char arr[]={'r','p','s'};
 	
 	srand(time(NULL));
@@ -20,13 +20,13 @@ char rnd(){
 	return arr[rnd];
 }
 
-char *conver_char(char c){
+char *conver_char(char c) {
 	if (c == 'r') return "rock";       
 	if (c == 's') return "scissors";       
 	if (c == 'p') return "paper"; 
 }
 
-void result(char user, char comp){
+void result(char user, char comp) {
 	
 	printf("You choose %s, I choose %s\n", 
 		conver_char(user), conver_char(comp));
@@ -43,7 +43,7 @@ void result(char user, char comp){
 					conver_char(comp), conver_char(user));				
 }
 
-int main(){
+int main() {
 	char user = read_user();
 	char comp = rnd();
 
