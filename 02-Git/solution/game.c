@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 
 enum game_element {
 	ROCK,
@@ -28,6 +30,14 @@ static enum game_element char_to_element(char c)
 
 }
 
+static enum game_element generate_rand_element(void)
+{
+	srand((unsigned int) time(NULL));
+	const int upper_bound = INVAL_ELEM;
+
+	return (rand() % upper_bound);
+}
+
 static char get_user_input(void)
 {
 	char user_select;
@@ -41,11 +51,15 @@ int main(void)
 {
 	enum game_element user_select =  char_to_element(get_user_input());
 
-	if (user_select == INVAL_ELEM)
+	if (user_select == INVAL_ELEM) {
 		printf("Invalid user input\n");
-	else
-		printf("User selected %s\n", element_to_str(user_select));
+	} else {
+		printf("You choose %s\n", element_to_str(user_select));
 
+		enum game_element pc_choice = generate_rand_element();
+
+		printf("I chose %s\n", element_to_str(pc_choice));
+	}
 	return 0;
 }
 
