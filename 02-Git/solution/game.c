@@ -9,6 +9,19 @@ enum game_element {
 	INVAL_ELEM
 };
 
+
+static const enum game_element beats[3] = {PAPER, ROCK, SCISSORS};
+
+static void show_game_result(enum game_element my, enum game_element human)
+{
+	if (my == human)
+		printf("Draw\n");
+	else if (beats[my] == human)
+		printf("You win\n");
+	else
+		printf("I win\n");
+}
+
 static const char *element_to_str(enum game_element e)
 {
 	static const char * const el_names[] = {"rock", "scissors", "paper"};
@@ -59,6 +72,7 @@ int main(void)
 		enum game_element pc_choice = generate_rand_element();
 
 		printf("I chose %s\n", element_to_str(pc_choice));
+		show_game_result(pc_choice, user_select);
 	}
 	return 0;
 }
