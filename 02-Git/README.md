@@ -11,3 +11,18 @@ The game should be simple, the goal is to create a git project with proper commi
 > You choose rock, I choose paper
 > I win: paper beats rock
 ```
+
+# Finished task
+
+To make and run the project execute in the project folder:
+```
+make
+```
+then:
+```
+./main
+```
+To clean the project:
+```
+make clean
+```
