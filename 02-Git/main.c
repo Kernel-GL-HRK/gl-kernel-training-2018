@@ -63,7 +63,12 @@ int get_computer_choice()
 
 int determine_winner(const int userChoice,const int computerChoice)
 {
-	return COMPUTER;
+	static int solution_map[3][3] = {
+		BOTH,		USER,		COMPUTER,
+		COMPUTER,	BOTH,		USER,
+		USER,		COMPUTER,	BOTH		
+	};
+	return solution_map[userChoice][computerChoice];
 }
 
 void print_choice( int choice);
