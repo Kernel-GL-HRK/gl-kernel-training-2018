@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 
 char read_user()
 {
@@ -10,10 +12,21 @@ char read_user()
 	return user;
 } 
 
+char rnd()
+{
+	char arr[]={'r','p','s'};
+	
+	srand(time(NULL));
+	int rnd =  rand()%3;
+	
+	return arr[rnd];
+}
+
 int main()
 {
 
 	char user = read_user();
-	
+	char comp = rnd();
+		
 	return 0;	
 }
