@@ -1,14 +1,26 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> a5cbfad... 02-Git: Finish hometask
+>>>>>>> 0787404... 02-Git: Finish hometask2
 #include <iostream>
 >>>>>>> 6d744a0... 02-Git: File structure only
+=======
+#include <iostream>
+>>>>>>> 63e38d6... 02-Git: Finish hometask
 #include <stdlib.h>
+using namespace std;
 
 int main()
 {
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> 63e38d6... 02-Git: Finish hometask
 const char strLine[] = "rps";
 int max = sizeof(strLine)-1;
 char userSmbl;
@@ -59,13 +71,21 @@ if (position > 17) {
 	cout << "I win :( \n";
 }
 
+<<<<<<< HEAD
 =======
 #include <stdlib.h>
 
 int main()
 {
 >>>>>>> a484a0f... 02-Git: File structure only
+<<<<<<< HEAD
 >>>>>>> 6d744a0... 02-Git: File structure only
+=======
+>>>>>>> 63e38d6... 02-Git: Finish hometask
+=======
+=======
+>>>>>>> a5cbfad... 02-Git: Finish hometask
+>>>>>>> 0787404... 02-Git: Finish hometask2
 return 0;
 }
 
