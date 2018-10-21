@@ -1,5 +1,45 @@
 #!/bin/bash
 
+#truncate all command-line options to normal length
+for LAST_ARG ; do
+  shift
+  case "$LAST_ARG" in
+  "--help") set -- "$@" "-h" ;;
+  *) set -- "$@" "$LAST_ARG";;
+  esac
+done
+
+#trick to get last option
+echo "$LAST_ARG"
+
+while getopts ":n:h" OPT; do
+  case $OPT in
+  n) echo "Found  argument for option $OPT - $OPTARG"
+     FILE_NUM=$OPTARG
+     if ! [[ "$FILE_NUM" =~ ^[0-9]+$ ]]; then
+       echo "Number of files should be positive integer"
+       exit 1
+     fi
+     if [[ $FILE_NUM < 1 ]]; then
+       echo "Number of files is less than 1"
+       exit 1
+     fi;;
+  h) echo "Short guide will be displayed here"; exit 0;;
+  *) echo "Wrong commandline options specified, see --help for details"; exit 1;;
+  esac
+done
+
+
+if [ "$LAST_ARG" = "$FILE_NUM" ]; then
+  FILE_PATH='~/bash/task1.out'
+else
+  FILE_PATH="$LAST_ARG"
+fi
+
+echo Use path "$FILE_PATH"
+
+exit 0
+
 
 echo "--------------Hardware---------------------"
 echo CPU: \"$(dmidecode -t 4 | grep Version | cut -d' ' -f2-)\"
