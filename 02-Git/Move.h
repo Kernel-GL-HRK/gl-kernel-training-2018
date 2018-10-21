@@ -7,25 +7,26 @@
 
 #define MAX_MOVE_VALUE 			2
 
-namespace RockPaperScissors {
+namespace RockPaperScissors
+{
 
-	enum MoveValue
-	{
-		mvvError = -1,
-		mvvRock = 0,
-		mvvPaper = 1,
-		mvvScissors = 2
-	};
+    enum MoveValue
+    {
+        mvvError = -1,
+        mvvRock = 0,
+        mvvPaper = 1,
+        mvvScissors = 2
+    };
 
-	class Move
-	{
-	private:
-		MoveValue mValue;
-	public:
-		Move();
-		Move(char value);
-		MoveValue getValue();
-	};
+    class Move
+    {
+    private:
+        MoveValue mValue;
+    public:
+        Move();
+        Move(char value);
+        MoveValue getValue();
+    };
 }
 
 #endif

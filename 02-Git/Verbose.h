@@ -7,16 +7,17 @@
 #include "Move.h"
 #include "Driver.h"
 
-namespace RockPaperScissors {
+namespace RockPaperScissors
+{
 
-	class Verbose
-	{
-	public:
-		void printRules();
-		void printChoise(MoveValue const& player, MoveValue const& pc);
-		void printGameResult(GameResult result);
-		void printPrank();
-	};
+    class Verbose
+    {
+    public:
+        void printRules();
+        void printChoise(MoveValue const &player, MoveValue const &pc);
+        void printGameResult(GameResult result);
+        void printPrank();
+    };
 }
 
 #endif
