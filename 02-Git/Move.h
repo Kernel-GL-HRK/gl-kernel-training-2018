@@ -11,6 +11,7 @@ namespace RockPaperScissors {
 
 	enum MoveValue
 	{
+		mvvError = -1,
 		mvvRock = 0,
 		mvvPaper = 1,
 		mvvScissors = 2
@@ -18,10 +19,12 @@ namespace RockPaperScissors {
 
 	class Move
 	{
+	private:
+		MoveValue mValue;
 	public:
 		Move();
-		~Move();
-		
+		Move(char value);
+		MoveValue getValue();
 	};
 }
 

@@ -10,15 +10,15 @@ namespace RockPaperScissors {
 
 	enum GameResult
 	{
-		grDraw = 0,
-		grPlayer0Win = 1,
-		grPlayer1Win = -1
+		grDraw = 2,
+		grPlayer0Win = 0,
+		grPlayer1Win = 1
 	};
 
 	class Driver
 	{
 	private:
-		GameResult state[MAX_MOVE_VALUE][MAX_MOVE_VALUE];
+		GameResult mState[MAX_MOVE_VALUE][MAX_MOVE_VALUE];
 	public:
 		Driver();
 		~Driver();

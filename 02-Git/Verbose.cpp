@@ -13,12 +13,22 @@ namespace RockPaperScissors {
 	}
 
 	void Verbose::printChoise(MoveValue const& player, MoveValue const& pc) {
-		char choise_verbose[3][10] = {"rock\0", "paper\0", "scissors\0"};
-		printf("You choose %s. My coose was %s\n", choise_verbose[player], choise_verbose[pc]);
+		static char choise_verbose[3][10] = {"rock\0", "paper\0", "scissors\0"};
+		printf("You choose %s. I choose %s\n", choise_verbose[player], choise_verbose[pc]);
 	}
 
-	void printGameResult(GameResult result) {
-		// static string result_verbose[3] = {"You won.", "You lose. You own me 10$.", "Draw."};
-		// printf("%s\n", result_verbose[(int)result].c_str());
+	void Verbose::printGameResult(GameResult result) {
+		static int cash = 0;
+		static char result_verbose[3][33] = {"You won. Let's play once agean.\0", "You lose.\0", "Draw.\0"};
+		if(result == grPlayer1Win) {
+			cash++;
+			printf("%s You own me %d$    ($_$)\n\n", result_verbose[result], cash*100);
+		} else {
+			printf("%s\n\n", result_verbose[result]);
+		}
+	}
+
+	void Verbose::printPrank() {
+		printf("You must be joking    (-_-). Have you ever learn alfabet?\n");
 	}
 }

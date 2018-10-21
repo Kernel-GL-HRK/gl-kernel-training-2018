@@ -10,12 +10,33 @@
 
 #include "Driver.h"
 #include "Verbose.h"
+#include <cstdio> // getchar
 
 using namespace RockPaperScissors;
 
 int main(int argc, char const *argv[])
 {
 	Verbose croupier;
-	croupier.printRules();
+
+	char userOption = '.';
+	Driver driver;
+
+	while (userOption != 'x') {
+		croupier.printRules();
+		userOption = getchar();
+
+		if((userOption == 'p') || (userOption == 's') || (userOption == 'r')) {
+			Move usr(userOption);
+			Move pc;
+			croupier.printChoise(usr.getValue(), pc.getValue());
+			croupier.printGameResult(driver.getGameResult(usr, pc));
+		} else if(userOption == 'x') {
+			break;
+		} else {
+			croupier.printPrank();
+		}
+
+		getchar();
+	}
 	return 0;
 }

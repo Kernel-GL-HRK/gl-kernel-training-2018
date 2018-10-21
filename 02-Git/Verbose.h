@@ -14,7 +14,8 @@ namespace RockPaperScissors {
 	public:
 		void printRules();
 		void printChoise(MoveValue const& player, MoveValue const& pc);
-		void printGameResult(GameResult returnesult);
+		void printGameResult(GameResult result);
+		void printPrank();
 	};
 }
 

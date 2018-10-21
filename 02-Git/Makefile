@@ -1,7 +1,7 @@
 # makefile config
 # compiller
-CC = gcc
-CFLAGS  = -g -Wall
+CC = g++
+CFLAGS  =-g -std=c++11 -Wall -pedantic -lstdc++ -fno-stack-protector
 COBJ = -c
 # final destination file name
 SOURCES=main.cpp Driver.cpp Move.cpp Verbose.cpp

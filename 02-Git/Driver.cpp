@@ -3,27 +3,27 @@
  */
 #include "Driver.h"
 #include "Move.h"
+#include "Verbose.h"
 
 namespace RockPaperScissors {
 
 	Driver::Driver() {
-		state[mvvRock][mvvRock] = grDraw;
-		state[mvvRock][mvvPaper] = grPlayer1Win;
-		state[mvvRock][mvvScissors] = grPlayer0Win;
+		mState[mvvRock][mvvRock] = grDraw;
+		mState[mvvRock][mvvPaper] = grPlayer1Win;
+		mState[mvvRock][mvvScissors] = grPlayer0Win;
 
-		state[mvvPaper][mvvRock] = grPlayer0Win;
-		state[mvvPaper][mvvPaper] = grDraw;
-		state[mvvPaper][mvvScissors] = grPlayer1Win;
+		mState[mvvPaper][mvvRock] = grPlayer0Win;
+		mState[mvvPaper][mvvPaper] = grDraw;
+		mState[mvvPaper][mvvScissors] = grPlayer1Win;
 
-		state[mvvScissors][mvvRock] = grPlayer1Win;
-		state[mvvScissors][mvvPaper] = grPlayer0Win;
-		state[mvvScissors][mvvScissors] = grDraw;
+		mState[mvvScissors][mvvRock] = grPlayer1Win;
+		mState[mvvScissors][mvvPaper] = grPlayer0Win;
+		mState[mvvScissors][mvvScissors] = grDraw;
 	}
 
-	Driver::~Driver() {
-
-	}
+	Driver::~Driver() {}
 
 	GameResult Driver::getGameResult(Move player0, Move player1) {
+		return mState[player0.getValue()][player1.getValue()];
 	}
 }
