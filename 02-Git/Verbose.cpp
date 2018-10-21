@@ -14,7 +14,7 @@ namespace RockPaperScissors {
 
 	void Verbose::printChoise(MoveValue const& player, MoveValue const& pc) {
 		char choise_verbose[3][10] = {"rock\0", "paper\0", "scissors\0"};
-		printf("You choose %s. My coose was %s\n", choise_verbose[0], choise_verbose[0]);
+		printf("You choose %s. My coose was %s\n", choise_verbose[player], choise_verbose[pc]);
 	}
 
 	void printGameResult(GameResult result) {
