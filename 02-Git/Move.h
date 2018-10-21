@@ -2,12 +2,14 @@
  * Describes player move entity
  */
 
-#ifndef 02_GIT_MOVE_H
-#define 02_GIT_MOVE_H
+#ifndef LESSON02_GIT_MOVE_H
+#define LESSON02_GIT_MOVE_H
+
+#define MAX_MOVE_VALUE 			2
 
 namespace RockPaperScissors {
 
-	typedef enum MoveValue
+	enum MoveValue
 	{
 		mvvRock = 0,
 		mvvPaper = 1,

@@ -1,16 +1,21 @@
 /**
  * Implements UI.
  */
-#ifndef 02_GIT_VERBOSE_H
-#define 02_GIT_VERBOSE_H
+#ifndef LESSON02_GIT_VERBOSE_H
+#define LESSON02_GIT_VERBOSE_H
+
+#include "Move.h"
+#include "Driver.h"
 
 namespace RockPaperScissors {
 
 	class Verbose
 	{
 	public:
-		Verbose();
-		~Verbose();
-		
+		void printRules();
+		void printChoise(MoveValue const& player, MoveValue const& pc);
+		void printGameResult(GameResult returnesult);
 	};
 }
+
+#endif

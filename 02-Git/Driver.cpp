@@ -5,4 +5,11 @@
 
 namespace RockPaperScissors {
 
+	Driver::Driver() {
+
+	}
+
+	Driver::~Driver() {
+
+	}
 }
