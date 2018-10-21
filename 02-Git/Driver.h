@@ -18,7 +18,7 @@ namespace RockPaperScissors {
 	class Driver
 	{
 	private:
-		bool state[MAX_MOVE_VALUE][MAX_MOVE_VALUE];
+		GameResult state[MAX_MOVE_VALUE][MAX_MOVE_VALUE];
 	public:
 		Driver();
 		~Driver();
