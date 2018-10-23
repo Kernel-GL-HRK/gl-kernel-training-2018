@@ -28,6 +28,12 @@ while getopts ":n:h" OPT; do
   esac
 done
 
+#we need to have root privilegies to be able to launch dmidecode
+if [ "$EUID" -ne 0 ]; then
+  echo "Please run as root"
+  exit 1
+fi
+
 #set default file 
 if [ "$LAST_ARG" = "$FILE_NUM" ]; then
   FILE_PATH='~/bash/task1.out'
