@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 
 PARAM_N=1
 FILE_PATH=~/bash_out/task1.out
@@ -6,7 +6,28 @@ FLAG_INSIDE=0
 
 function get_hw_info()
 {
+    local TOTAL_MEMORY=0
+    local MANUFACRTURER
+    local PRODUCT
+
     echo "---- Hardware ----" >> $FILE_PATH
+#CPU
+    $(dmidecode -t processor | grep "Version:" | sed 's/.Version/CPU/' >> $FILE_PATH)
+#RAM
+    for item in $(dmidecode -t memory | grep "Size:")
+    do
+        if [[ $item =~ ^[0-9]+$ ]]
+        then
+            let TOTAL_MEMORY=TOTAL_MEMORY+$item
+        fi
+    done
+    echo "RAM: $TOTAL_MEMORY MB" >> $FILE_PATH
+#MB
+    MANUFACRTURER=$(dmidecode -t baseboard | grep "Manufacturer" | sed 's/.Manufacturer/Motherboard/')
+    PRODUCT=$(dmidecode -t baseboard | grep "Product Name" | sed 's/.Product Name://')
+    echo "$MANUFACRTURER,$PRODUCT" >> $FILE_PATH
+#SN
+    $(dmidecode -t system | grep "Serial Number:" | sed 's/.Serial Number/System Serial Number/' >> $FILE_PATH)
 
     echo "" >> $FILE_PATH
 }
