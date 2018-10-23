@@ -95,9 +95,10 @@ touch "$FILE_PATH"
 echo Use path "$FILE_PATH"
 
 
+echo Date: $(date +'%a, %d %b %Y %H:%M:%S')>>$FILE_PATH
 echo "--------------Hardware---------------------" >>$FILE_PATH
 echo CPU: \"$(dmidecode -t 4 | grep Version | cut -d' ' -f2-)\" >>$FILE_PATH
-echo RAM: $( sudo dmidecode --type memory | awk '
+echo RAM: $(dmidecode --type memory | awk '
 /Size: [0-9]+ MB$/ { 
   total += $2; 
   } END { 
