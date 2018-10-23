@@ -16,21 +16,21 @@ while getopts ":n:h" OPT; do
   n) echo "Found  argument for option $OPT - $OPTARG"
      FILE_NUM=$OPTARG
      if ! [[ "$FILE_NUM" =~ ^[0-9]+$ ]]; then
-       echo "Number of files should be positive integer"
+       echo "Number of files should be positive integer">&2
        exit 1
      fi
      if [[ $FILE_NUM < 1 ]]; then
-       echo "Number of files is less than 1"
+       echo "Number of files is less than 1" >&2
        exit 1
      fi;;
   h) echo "Short guide will be displayed here"; exit 0;;
-  *) echo "Wrong commandline options specified, see --help for details"; exit 1;;
+  *) echo "Wrong commandline options specified, see --help for details" >&2; exit 1;;
   esac
 done
 
 #we need to have root privilegies to be able to launch dmidecode
 if [ "$EUID" -ne 0 ]; then
-  echo "Please run as root"
+  echo "Please run as root"  >&2
   exit 1
 fi
 
