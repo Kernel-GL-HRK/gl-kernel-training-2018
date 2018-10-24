@@ -3,6 +3,39 @@
 PARAM_N=1
 FILE_PATH=~/bash_out/task1.out
 FLAG_INSIDE=0
+LOCALE=US
+
+function print_localized_message()
+{
+    case "$1" in
+        "MESSAGE1") if [ "$LOCALE" = UA ]
+                    then
+                        echo "-n параметр мусить доривнювати або бiлше за 1" >&2
+                    else
+                        echo "-n parameter must be greter or equal 1" >&2
+                    fi;;
+        "MESSAGE2") if [ "$LOCALE" = UA ]
+                    then
+                        echo "-n параметр мусить бути цiлым числом" >&2
+                    else
+                        echo "-n parameter must be an integer value" >&2
+                    fi;;
+        "MESSAGE3") if [ "$LOCALE" = UA ]
+                    then
+                        echo "Забагато аргументiв" >&2
+                    else
+                        echo "Too many arguments" >&2
+                    fi;;
+    esac
+}
+
+function check_locale()
+{
+    if [ "$LANG" = "uk_UA.UTF-8" ]
+    then
+        LOCALE=UA
+    fi
+}
 
 function get_hw_info()
 {
@@ -98,11 +131,11 @@ function set_count()
         then
             PARAM_N=$1
         else
-            echo "-n parameter must be greter or equal 1" >&2
+            print_localized_message "MESSAGE1"
             exit 1
         fi
     else
-        echo "-n parameter must be an integer value" >&2
+        print_localized_message "MESSAGE2"
         exit 1
     fi
 }
@@ -117,7 +150,7 @@ function parse_args()
 #Check count of arguments. It can't be greater than 4
     if [ "$#" -gt 3 ]
     then
-        echo "Too many arguments"
+        print_localized_message "MESSAGE3"
         exit 1
     fi
 
@@ -136,6 +169,8 @@ function parse_args()
 
 function main()
 {
+    check_locale
+
     parse_args "$@"
 
     create_output_file
