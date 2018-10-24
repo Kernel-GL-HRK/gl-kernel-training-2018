@@ -26,6 +26,12 @@ function print_localized_message()
                     else
                         echo "Too many arguments" >&2
                     fi;;
+        "MESSAGE4") if [ "$LOCALE" = UA ]
+                    then
+                        echo "Не вдалося створити папку виводу" >&2
+                    else
+                        echo "Failed to create output folder" >&2
+                    fi;;
     esac
 }
 
@@ -108,7 +114,20 @@ function get_network_info()
 
 function create_output_file()
 {
-   $(mkdir -p "$(dirname "$FILE_PATH")" && touch "$FILE_PATH")
+    if [ -e  $FILE_PATH ]
+    then
+        if [ $PARAM_N -gt "1" ]
+        then
+            echo "TBD: Remove old files"
+        fi
+    else
+        $(mkdir -p "$(dirname "$FILE_PATH")" && touch "$FILE_PATH")
+        if (( $? ))
+        then
+            print_localized_message "MESSAGE4"
+            exit 1
+        fi
+    fi
 }
 
 function usage()
