@@ -1,9 +1,10 @@
+OBJS := $(main.o)
 
 hello: main.o
-	gcc -o hello main.o -lc
+	gcc -o hello main.o
 
 main.o: main.c
-	gcc -c main.c -o main.o
+	gcc -c main.c
 
 clean:
-	-rm *.o main a.out
+	-rm *.o hello
