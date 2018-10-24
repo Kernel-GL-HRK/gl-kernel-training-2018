@@ -1,6 +1,10 @@
+<<<<<<< 22bd2a9fd2818021980cd8380c2ed5e9562f3e1f
 # Kernel module
 
 ## Homework
+=======
+# Homework:
+>>>>>>> 04-KernelModule: Add homework task
 
 Create a simple Kernel module:
 
