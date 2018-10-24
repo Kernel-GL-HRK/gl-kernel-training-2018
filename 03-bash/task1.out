@@ -1,0 +1,15 @@
+Date: Ср, 24 окт 2018 10:54:18 +0300
+---- Hardware ----
+CPU: "Intel(R) Pentium(R) Silver N5000 CPU @ 1.10GHz"
+RAM: 4096 MB
+Motherboard: "LENOVO", "LNVNB161216"
+System serial number: PF199ZW8
+---- System ----
+OS Distribution: "Ubuntu 18.04.1 LTS"
+Kernel Version: 4.19.0-rc8+
+Hostname: olegh-ideapad
+---- Network ----
+enp1s0: -/-
+lo: 127.0.0.1/8
+wlp2s0: 192.168.1.24/24
+---- "EOF" ----
