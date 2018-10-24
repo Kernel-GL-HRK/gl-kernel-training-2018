@@ -55,7 +55,21 @@ function get_sys_info()
 
 function get_network_info()
 {
+    local result
+
     echo "---- Network ----" >> $FILE_PATH
+
+    for item in $(ifconfig | cut -d" " -f1| awk NF | cut -d":" -f1)
+    do
+	    result=$(ip -f inet address show $item | grep inet | awk '{ print $2 }')
+        if [ ! -z $result ]
+        then
+            echo "$item: $result" >> $FILE_PATH
+        else
+            echo "$item: -/-" >> $FILE_PATH
+        fi
+    done
+
     echo "" >> $FILE_PATH
 }
 
