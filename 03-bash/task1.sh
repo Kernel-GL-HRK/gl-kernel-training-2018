@@ -1,4 +1,6 @@
 #!/bin/bash
+# LESSON03: task1.sh - system information
+
 # check lang
 LNG='en'
 SYS_LANG=${LANG::5}
