@@ -35,6 +35,21 @@ function get_hw_info()
 function get_sys_info()
 {
     echo "---- System ----" >> $FILE_PATH
+#Distr name
+    echo "OS Distribution: $(cat /etc/os-release | grep VERSION= | sed 's/VERSION=//')" >> $FILE_PATH
+#Kernel Ver
+    echo "Kernel version: $(uname -r)" >> $FILE_PATH
+#Install date
+    echo "Installation date: "$(stat -c %z /var/log/installer/syslog) >> $FILE_PATH
+#Hostname
+    echo "Hostname: $(hostname)" >> $FILE_PATH
+#Uptime
+    echo "Uptime: $(uptime -p)" >> $FILE_PATH
+#Processes running, without threads
+    echo "Processes running: $( ps -A --no-headers | wc -l)" >> $FILE_PATH
+#Number of users
+    echo "User logged in: $(users | wc -w)" >> $FILE_PATH
+
     echo "" >> $FILE_PATH
 }
 
