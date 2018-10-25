@@ -1,0 +1,14 @@
+$ sudo dmesg -c
+$ sudo insmod testmodule.ko param=5
+insmod: ERROR: could not insert module testmodule.ko: Input/output error
+$ lsmod | grep testmodule
+$ dmesg
+[ 7769.832416] A Test module loaded!
+[ 7769.832418] Lets try different log levels
+[ 7769.832418] This is INFO level
+[ 7769.832419] This is NOTICE level
+[ 7769.832419] This is WARNING level
+[ 7769.832420] This is ERROR level
+[ 7769.832423] This is CRITICAL level
+[ 7769.832424] This is ALERT level
+[ 7769.832426] This is EMERGENCY level
