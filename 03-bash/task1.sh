@@ -114,12 +114,29 @@ function get_network_info()
 
 function create_output_file()
 {
-    if [ -e  $FILE_PATH ]
-    then
-        if [ $PARAM_N -gt "1" ]
-        then
-            echo "TBD: Remove old files"
-        fi
+	local LAST_FILENAME=
+	declare -i NEW_NUM=0
+
+	if [ -e  $FILE_PATH ]; then
+		#find last file in a chain
+		for item in $(ls $(dirname $FILE_PATH))
+		do
+			if [[ $(basename $item) =~ $(basename $FILE_PATH)-$(date '+%Y%m%d')- ]]; then					
+				LAST_FILENAME=$item
+			fi
+		done
+		#move target file in the end
+		if [ ! -e $LAST_FILENAME ]; then
+			let NEW_NUM=$[10#$(cut -d '-' -f3 <<< $LAST_FILENAME)]+1		
+			$(cp $FILE_PATH $(dirname $FILE_PATH)/$(basename $FILE_PATH)-$(date '+%Y%m%d')-$(printf %04d $NEW_NUM))
+		else
+			$(cp $FILE_PATH $(dirname $FILE_PATH)/$(basename $FILE_PATH)-$(date '+%Y%m%d')-$(printf %04d $NEW_NUM))
+		fi
+		#delete files older than N
+		for (( i=$NEW_NUM - $PARAM_N; i >= 0; i-- ))
+		do
+			$(rm -f $(dirname $FILE_PATH)/$(basename $FILE_PATH)-$(date '+%Y%m%d')-$(printf %04d $i))
+		done
     else
         $(mkdir -p "$(dirname "$FILE_PATH")" && touch "$FILE_PATH")
         if (( $? ))
