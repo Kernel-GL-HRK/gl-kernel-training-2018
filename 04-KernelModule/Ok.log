@@ -1,0 +1,16 @@
+$ sudo dmesg -c
+$ sudo insmod testmodule.ko param=0
+$ lsmod | grep testmodule
+testmodule             16384  0
+$ sudo rmmod testmodule
+$ dmesg
+[ 7566.402181] A Test module loaded!
+[ 7566.402183] Lets try different log levels
+[ 7566.402183] This is INFO level
+[ 7566.402184] This is NOTICE level
+[ 7566.402184] This is WARNING level
+[ 7566.402185] This is ERROR level
+[ 7566.402188] This is CRITICAL level
+[ 7566.402190] This is ALERT level
+[ 7566.402191] This is EMERGENCY level
+[ 7617.626877] A Test module unloaded
