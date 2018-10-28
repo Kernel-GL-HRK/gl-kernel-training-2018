@@ -20,10 +20,32 @@ function print_help(){
 		>&2 echo 'e.g. task1.sh -n 9 ./test/info/info.txt'
 	fi
 }
+function print_invalid_arguments_number()
+{
+	if [[ $(get_locale_name) = "uk_UA" ]]
+	then
+		>&2 echo "некоректний параметр"
+	else
+		>&2 echo "invalid parameter"
+	fi
+}
 
+function check_num_files()
+{
+	re='^[0-9]+$'
+	if ! [[ $1 =~ $re ]]; then
+  		print_invalid_arguments_number
+  		exit -1;
+  	fi
 
-num_files = "0"
-file_path =""
+  	if (( $1 < 1 )); then 
+  		print_invalid_arguments_number
+  		exit -1;
+  	fi
+}
+
+num_files="0"
+file_path=""
 
 cur_local=$(get_locale_name)
 
@@ -35,11 +57,11 @@ while (( "$#" )); do
   		 then
 			print_help
   			exit 0
-  			#statements
   		fi
 
   		if [[ $1 = -n && $# > 2 ]]; then
   			num_files="$2"
+  			check_num_files "$num_files"
   			shift; shift; continue;
   		fi
 
