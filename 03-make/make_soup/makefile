@@ -10,6 +10,9 @@
 #/food-market
 
 
+VEGAN:=NO
+MEAT:=meat
+S_MEAT:=soy meat
 
 cooked_soup.txt: bouillon.txt zazharka.txt
 	cd kitchen/table; cat $^ > $@
@@ -20,7 +23,11 @@ bouillon.txt: meat.txt water.txt
 	cd kitchen/table ; ./pot/cook.sh  boil $^ > $@
 
 meat.txt: init
-	echo "meat" > food-market/$@
+ifeq ($(VEGAN),NO)
+		echo $(MEAT) > food-market/$@
+else
+		echo $(S_MEAT) > food-market/$@
+endif
 	mv food-market/$@ kitchen/table
 	./kitchen/knife/cut.sh "$(shell pwd)/kitchen/table/$@"
 
