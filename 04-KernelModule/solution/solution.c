@@ -5,6 +5,8 @@
 
 static int will_return;
 
+MODULE_PARM_DESC(will_return, "Return value for module init function");
+
 module_param(will_return, int, 0400);
 
 static int __init hello_init(void)
