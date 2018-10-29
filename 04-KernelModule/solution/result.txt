@@ -1,0 +1,29 @@
+root@WIN-7PEK2RUR4GB:/home/vadym/Documents/gl_kernel_training/04-KernelModule/solution# modinfo solution.ko 
+filename:       /home/vadym/Documents/gl_kernel_training/04-KernelModule/solution/solution.ko
+version:        0.1
+description:    Linux kernel module example
+author:         Vadym Mishchuk
+license:        GPL
+srcversion:     817006FB62BA4E15AA76EF6
+depends:        
+retpoline:      Y
+vermagic:       4.9.0-6-amd64 SMP mod_unload modversions 
+parm:           will_return:Return value for module init function (int)
+
+root@WIN-7PEK2RUR4GB:/home/vadym/Documents/gl_kernel_training/04-KernelModule/solution# make load
+sudo insmod solution.ko will_return=0
+sudo dmesg -c
+[12476.173458] Module loaded
+
+root@WIN-7PEK2RUR4GB:/home/vadym/Documents/gl_kernel_training/04-KernelModule/solution# make unload
+sudo rmmod solution.ko
+sudo dmesg -c
+[12480.606556] Module removed
+
+root@WIN-7PEK2RUR4GB:/home/vadym/Documents/gl_kernel_training/04-KernelModule/solution# make load_fail
+sudo insmod solution.ko will_return=-1
+insmod: ERROR: could not insert module solution.ko: Operation not permitted
+Makefile:14: recipe for target 'load_fail' failed
+make: [load_fail] Error 1 (ignored)
+sudo dmesg -c
+[12606.211049] Module load will fail
