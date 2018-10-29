@@ -31,6 +31,60 @@ ValidationParam()
 	fi
 }
 
+getCurrentDate()
+{
+   	echo "Date: ""$(date -R) $@"
+}
+
+isEmpty()
+{
+	test -z $1
+}
+
+getHardwareInfo()
+{
+	echo "---- Hardware ----"
+	CPU=$(cat /proc/cpuinfo | grep 'model name' | uniq | cut -f 2 -d ":" | awk '{$1=$1}1')
+	RamTotalSize=$(sudo dmidecode  -t memory  | grep "Size" | cut -f 2 -d ":" | awk '{$1=$1}1')
+	Manufacturer=$(sudo dmidecode -s baseboard-manufacturer)
+	ProductName=$(sudo dmidecode -s baseboard-product-name)
+	SerialNumber=$(sudo dmidecode -s system-serial-number)
+	
+	
+	if isEmpty $CPU; then 
+		CPU=Unknown 
+	fi
+
+	if isEmpty $RamTotalSize; then 
+		RamTotalSize=Unknown 
+	fi
+
+	if isEmpty $Manufacturer; then 
+		Manufacturer=Unknown 
+	fi
+
+	if isEmpty $ProductName; then 
+		ProductName=Unknown 
+	fi
+	
+	if isEmpty $SerialNumber; then 
+		SerialNumber=Unknown 
+	fi
+
+	echo "CPU: ""\"$CPU\""
+	echo "RAM: "$RamTotalSize
+	echo "Motherboard: ""\"$Manufacturer\"","\"$ProductName\""
+	echo  "System Serial Number: "$SerialNumber
+}
+
+getBaseInfo()
+{
+	exec 1>info.txt
+	getCurrentDate
+	getHardwareInfo
+}
+
+LANG=en_US.utf8
 #parse args
 while [ -n "$1" ]
 do
@@ -52,3 +106,4 @@ esac
 done
 
 ValidationParam $numfile
+getBaseInfo
