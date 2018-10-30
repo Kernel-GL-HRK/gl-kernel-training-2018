@@ -19,3 +19,13 @@ $ sudo rmmod mymodule
 $ sudo dmesg
 < end log >
 ```
+
+# Finished homework:
+
+To build the module on Ubuntu 16.04:
+1. Execute following command to install all necessary tools and libs
+```
+sudo apt-get install build-essential linux-headers-`uname -r`
+```
+2. Run "make" in this folder
+3. Run "insmod mymodule.ko myparamint=0" to check
