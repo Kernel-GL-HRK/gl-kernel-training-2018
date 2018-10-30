@@ -1,4 +1,4 @@
-#!/bin/bash  -x
+#!/bin/bash  +x
 
 clear
 
@@ -44,6 +44,66 @@ function check_num_files()
   	fi
 }
 
+function print_system_info()
+{
+
+	#$1  filename
+	#	---- Hardware ----
+	#CPU: "Intel(R) Celeron(R) CPU E1400 @ 2.00GHz"
+	#RAM: 2048 MB
+	#Motherboard: "ASUSTeK Computer INC", "P5KPL-AM/PS"
+	#System Serial Number:
+	echo $(date "+Date: %a, %d %m %Y -%H:%M:%S %z")
+	echo "============Hardware==================="
+	echo $(sudo dmidecode -s  processor-version)
+	    for mem in $( sudo dmidecode -t memory | grep -Ei 'Size:\s+[0-9]+\s+MB' | grep -oEi '[0-9]+' )
+        do
+            let total_mem=total_mem+$mem
+        done
+	echo "RAM: $total_mem MB"
+	     MotherboardProducer=$( sudo dmidecode -s chassis-manufacturer )
+	     MotherboardType=$( sudo dmidecode -s  baseboard-product-name )
+
+	echo Motherboard: "\"$MotherboardProducer\", \"$MotherboardType\""
+	echo "System Serial Number: $( sudo dmidecode -s  baseboard-serial-number )"
+
+	#---- System ----
+	#OS Distribution: "CentOS release 6.10 (Final)"
+	#Kernel version: 2.6.32-754.el6.x86_64
+	#Installation date: Wed Sep 9 14:35:22 2015
+	#Hostname: ws267.se.nure.ua
+	#Uptime: 1:49
+	#Processes running: 194
+	#User logged in: 3
+	echo "---- System ----"
+	echo "OS Distribution: $( cat /etc/*release | grep DISTRIB_DESCRIPTION= | sed 's/DISTRIB_DESCRIPTION=//' )"
+    echo "Kernel version: $( uname -r ) "
+    echo "Installation date: $( stat -c %z /var/log/installer/syslog )"
+    echo "Hostname: $( hostname )"
+    echo "Uptime: $( uptime -p )" 
+    echo "Processes running: $( ps -ef | wc -l )"
+	echo "User logged in: $(users | wc -w)"
+
+	#---- Network ----
+	#lo: 127.0.0.1/8
+	#eth0: 192.168.123.231/24
+	echo "---- Network ----"
+
+	for link_name in $( ip link show  | grep -oEi "^[0-9]+:\s*\S+\:" | cut -f2 -d":" )
+    do
+	    link_status=$(ip -f inet address show $link_name | grep inet | awk '{ print $2 }')
+        if [ ! -z $link_status ]
+        then
+            echo "$link_name: $link_status"
+        else
+            echo "$link_name: -/-"
+        fi
+	done
+
+	#----"EOF"----
+	echo "----\"EOF\"----"
+}
+
 num_files="0"
 file_path=""
 
@@ -72,4 +132,5 @@ done
 
 echo "num_files $num_files"
 echo "file_path $file_path"
+print_system_info
 
