@@ -1,0 +1,19 @@
+root@olegh-ideapad:~/gl-kernel-training-2018/04-KernelModule# ./chkpatch.sh 1/olegh_first_module.c
+WARNING: Prefer [subsystem eg: netdev]_dbg([subsystem]dev, ... then dev_dbg(dev, ... then pr_debug(...  to printk(KERN_DEBUG ...
+#16: FILE: /home/olegh/gl-kernel-training-2018/04-KernelModule/1/olegh_first_module.c:16:
++	printk(KERN_DEBUG "Hello world! from olegh first module!\n");
+
+WARNING: Prefer [subsystem eg: netdev]_dbg([subsystem]dev, ... then dev_dbg(dev, ... then pr_debug(...  to printk(KERN_DEBUG ...
+#22: FILE: /home/olegh/gl-kernel-training-2018/04-KernelModule/1/olegh_first_module.c:22:
++	printk(KERN_DEBUG "Olegh first kernel module says to you: Goodbye!\n");
+
+total: 0 errors, 2 warnings, 32 lines checked
+
+NOTE: For some of the reported defects, checkpatch may be able to
+      mechanically convert to the typical style using --fix or --fix-inplace.
+
+/home/olegh/gl-kernel-training-2018/04-KernelModule/1/olegh_first_module.c has style problems, please review.
+
+NOTE: If any of the errors are false positives, please report
+      them to the maintainer, see CHECKPATCH in MAINTAINERS.
+root@olegh-ideapad:~/gl-kernel-training-2018/04-KernelModule# 

@@ -1,0 +1,9 @@
+$ dmesg -C
+$ sudo insmod olegh_first_module.ko
+$ dmesg
+[25536.718405] Hello world! from olegh first module!
+$ sudo rmmod olegh_first_module
+$ dmesg
+[25536.718405] Hello world! from olegh first module!
+[25545.088092] Olegh first kernel module says to you: Goodbye!
+$

@@ -1,0 +1,78 @@
+$ dmesg -C
+$ sudo insmod olegh_module2.ko
+$ dmesg
+[25648.129999] OlegH_Mod2: Hello world! from second module!
+[25648.130001] OlegH_Mod2: sParam: Default
+[25648.130001] OlegH_Mod2: iParam = 0
+$ sudo rmmod olegh_module2.ko
+$ lsmod | grep OlegH
+$ sudo insmod olegh_module2.ko sParam="Hello" iParam=0
+$ dmesg
+[25648.129999] OlegH_Mod2: Hello world! from second module!
+[25648.130001] OlegH_Mod2: sParam: Default
+[25648.130001] OlegH_Mod2: iParam = 0
+[25658.750908] OlegH_Mod2: Goodbye!
+[25745.653329] OlegH_Mod2: Hello world! from second module!
+[25745.653331] OlegH_Mod2: sParam: Hello
+[25745.653332] OlegH_Mod2: iParam = 0
+
+$ lsmod | grep olegh
+olegh_module2          16384  0
+$ sudo rmmod olegh_module2
+$ lsmod | grep olegh
+$ dmesg
+[25648.129999] OlegH_Mod2: Hello world! from second module!
+[25648.130001] OlegH_Mod2: sParam: Default
+[25648.130001] OlegH_Mod2: iParam = 0
+[25658.750908] OlegH_Mod2: Goodbye!
+[25745.653329] OlegH_Mod2: Hello world! from second module!
+[25745.653331] OlegH_Mod2: sParam: Hello
+[25745.653332] OlegH_Mod2: iParam = 0
+[25951.620112] OlegH_Mod2: Goodbye!
+$ sudo insmod olegh_module2.ko sParam="WrongChoice" iParam=38
+$ dmesg
+[25648.129999] OlegH_Mod2: Hello world! from second module!
+[25648.130001] OlegH_Mod2: sParam: Default
+[25648.130001] OlegH_Mod2: iParam = 0
+[25658.750908] OlegH_Mod2: Goodbye!
+[25745.653329] OlegH_Mod2: Hello world! from second module!
+[25745.653331] OlegH_Mod2: sParam: Hello
+[25745.653332] OlegH_Mod2: iParam = 0
+[25951.620112] OlegH_Mod2: Goodbye!
+[25983.505091] OlegH_Mod2: Hello world! from second module!
+[25983.505093] OlegH_Mod2: sParam: WrongChoice
+[25983.505094] OlegH_Mod2: iParam = 38
+[25983.505095] do_init_module: 'olegh_module2'->init suspiciously returned 38, it should follow 0/-E convention
+               do_init_module: loading module anyway...
+[25983.505098] CPU: 0 PID: 9679 Comm: insmod Tainted: G           OE     4.19.0-041900-generic #201810221809
+[25983.505099] Hardware name: LENOVO 81D1/LNVNB161216, BIOS 7XCN20WW 04/09/2018
+[25983.505100] Call Trace:
+[25983.505112]  dump_stack+0x63/0x8a
+[25983.505117]  do_init_module.cold.74+0x21/0x26
+[25983.505119]  load_module+0x16c1/0x1930
+[25983.505122]  __do_sys_finit_module+0xbd/0x120
+[25983.505123]  ? __do_sys_finit_module+0xbd/0x120
+[25983.505126]  __x64_sys_finit_module+0x1a/0x20
+[25983.505130]  do_syscall_64+0x5a/0x110
+[25983.505132]  entry_SYSCALL_64_after_hwframe+0x44/0xa9
+[25983.505135] RIP: 0033:0x7fd7441e2839
+[25983.505137] Code: 00 f3 c3 66 2e 0f 1f 84 00 00 00 00 00 0f 1f 40 00 48 89 f8 48 89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 8b 0d 1f f6 2c 00 f7 d8 64 89 01 48
+[25983.505138] RSP: 002b:00007ffc4a400348 EFLAGS: 00000246 ORIG_RAX: 0000000000000139
+[25983.505140] RAX: ffffffffffffffda RBX: 0000560c866a27b0 RCX: 00007fd7441e2839
+[25983.505141] RDX: 0000000000000000 RSI: 0000560c866a2260 RDI: 0000000000000003
+[25983.505141] RBP: 0000560c866a2260 R08: 0000000000000000 R09: 0000000000000000
+[25983.505142] R10: 0000000000000003 R11: 0000000000000246 R12: 0000000000000000
+[25983.505143] R13: 0000560c866a4ed0 R14: 0000000000000000 R15: 0000560c866a2260
+$ 
+$ sudo insmod olegh_module2.ko sParam="WrongChoice" iParam=-28
+insmod: ERROR: could not insert module olegh_module2.ko: File exists
+$ lsmod | grep olegh
+olegh_module2          16384  0
+$ sudo rmmod olegh_module2
+$ sudo insmod olegh_module2.ko sParam="WrongChoice" iParam=-28
+insmod: ERROR: could not insert module olegh_module2.ko: No space left on device
+$ sudo insmod olegh_module2.ko sParam="WrongChoice" iParam=-18
+insmod: ERROR: could not insert module olegh_module2.ko: Invalid cross-device link
+$ sudo insmod olegh_module2.ko sParam="WrongChoice" iParam=-38
+insmod: ERROR: could not insert module olegh_module2.ko: Function not implemented
+$ 
