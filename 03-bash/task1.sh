@@ -1,4 +1,4 @@
-#!/bin/bash  +x
+#!/bin/bash  -x
 
 clear
 
@@ -46,26 +46,25 @@ function check_num_files()
 
 function print_system_info()
 {
-
 	#$1  filename
 	#	---- Hardware ----
 	#CPU: "Intel(R) Celeron(R) CPU E1400 @ 2.00GHz"
 	#RAM: 2048 MB
 	#Motherboard: "ASUSTeK Computer INC", "P5KPL-AM/PS"
 	#System Serial Number:
-	echo $(date "+Date: %a, %d %m %Y -%H:%M:%S %z")
-	echo "============Hardware==================="
-	echo $(sudo dmidecode -s  processor-version)
+	>>"$1" echo $(date "+Date: %a, %d %m %Y -%H:%M:%S %z")
+	>>"$1" echo "============Hardware==================="
+	>>"$1" echo $(sudo dmidecode -s  processor-version)
 	    for mem in $( sudo dmidecode -t memory | grep -Ei 'Size:\s+[0-9]+\s+MB' | grep -oEi '[0-9]+' )
         do
             let total_mem=total_mem+$mem
         done
-	echo "RAM: $total_mem MB"
+	>>"$1" echo "RAM: $total_mem MB"
 	     MotherboardProducer=$( sudo dmidecode -s chassis-manufacturer )
 	     MotherboardType=$( sudo dmidecode -s  baseboard-product-name )
 
-	echo Motherboard: "\"$MotherboardProducer\", \"$MotherboardType\""
-	echo "System Serial Number: $( sudo dmidecode -s  baseboard-serial-number )"
+	>>"$1" echo Motherboard: "\"$MotherboardProducer\", \"$MotherboardType\""
+	>>"$1" echo "System Serial Number: $( sudo dmidecode -s  baseboard-serial-number )"
 
 	#---- System ----
 	#OS Distribution: "CentOS release 6.10 (Final)"
@@ -75,40 +74,38 @@ function print_system_info()
 	#Uptime: 1:49
 	#Processes running: 194
 	#User logged in: 3
-	echo "---- System ----"
-	echo "OS Distribution: $( cat /etc/*release | grep DISTRIB_DESCRIPTION= | sed 's/DISTRIB_DESCRIPTION=//' )"
-    echo "Kernel version: $( uname -r ) "
-    echo "Installation date: $( stat -c %z /var/log/installer/syslog )"
-    echo "Hostname: $( hostname )"
-    echo "Uptime: $( uptime -p )" 
-    echo "Processes running: $( ps -ef | wc -l )"
-	echo "User logged in: $(users | wc -w)"
+	>>"$1" echo "---- System ----"
+	>>"$1" echo "OS Distribution: $( cat /etc/*release | grep DISTRIB_DESCRIPTION= | sed 's/DISTRIB_DESCRIPTION=//' )"
+    >>"$1" echo "Kernel version: $( uname -r ) "
+    >>"$1" echo "Installation date: $( stat -c %z /var/log/installer/syslog )"
+    >>"$1" echo "Hostname: $( hostname )"
+    >>"$1" echo "Uptime: $( uptime -p )" 
+    >>"$1" echo "Processes running: $( ps -ef | wc -l )"
+	>>"$1" echo "User logged in: $(users | wc -w)"
 
 	#---- Network ----
 	#lo: 127.0.0.1/8
 	#eth0: 192.168.123.231/24
-	echo "---- Network ----"
+	>>"$1" echo "---- Network ----"
 
 	for link_name in $( ip link show  | grep -oEi "^[0-9]+:\s*\S+\:" | cut -f2 -d":" )
     do
 	    link_status=$(ip -f inet address show $link_name | grep inet | awk '{ print $2 }')
         if [ ! -z $link_status ]
         then
-            echo "$link_name: $link_status"
+           >>"$1" echo "$link_name: $link_status"
         else
-            echo "$link_name: -/-"
+           >>"$1"  echo "$link_name: -/-"
         fi
 	done
 
 	#----"EOF"----
-	echo "----\"EOF\"----"
+	>>"$1" echo "----\"EOF\"----"
 }
+
 
 num_files="0"
 file_path=""
-
-cur_local=$(get_locale_name)
-
 
 #parse command line 
 #./task1.sh [-h|--help] [-n num] [file]
@@ -131,6 +128,5 @@ while (( "$#" )); do
 done
 
 echo "num_files $num_files"
-echo "file_path $file_path"
-print_system_info
+print_system_info "$file_path"
 
