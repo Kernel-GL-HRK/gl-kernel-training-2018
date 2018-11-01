@@ -1,6 +1,10 @@
+<<<<<<< fec619c55bbe14eb98b0a4a02066f2bef129b15e
 # Interfaces (procfs, sysfs)
 
 ## Homework
+=======
+# Homework:
+>>>>>>> 05-Interfaces: Add homework task
 
 procfs and sysfs Kernel module interfaces:
 
