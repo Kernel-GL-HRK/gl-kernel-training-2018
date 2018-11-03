@@ -1,0 +1,14 @@
+--- LOG START ---
+$ sudo insmod mymodule.ko
+insmod: ERROR: could not insert module mymodule.ko: Operation not permitted
+$ sudo dmesg -c
+[95487.546537] init mymodule with internal param value=1
+$ sudo lsmod | grep mymodule
+$ sudo insmod mymodule.ko myparamint=0
+$ sudo dmesg -c
+[95506.523327] init mymodule with internal param value=0
+$ sudo rmmod mymodule
+$ sudo dmesg -c
+[95524.393591] Goodbye, cruel world!
+$
+--- LOG END ---
