@@ -1,0 +1,30 @@
+sudo insmod simpleModule.ko
+dmesg
+[23939.921360] simple module loaded. param = 0
+lsmod | grep simpleModule
+simpleModule           16384  0
+sudo rmmod simpleModule 
+dmesg
+[23939.921360] simple module loaded. param = 0
+[23971.903718] Simple module unloaded
+sudo insmod simpleModule.ko simple_param=5
+insmod: ERROR: could not insert module simpleModule.ko: Input/output error
+dmesg
+[23939.921360] simple module loaded. param = 0
+[23971.903718] Simple module unloaded
+[23988.841635] simple module loaded. param = 5
+lsmod | grep simpleModule
+sudo insmod simpleModule.ko simple_param=0
+dmesg
+[23939.921360] simple module loaded. param = 0
+[23971.903718] Simple module unloaded
+[23988.841635] simple module loaded. param = 5
+[24088.093913] simple module loaded. param = 0
+lsmod | grep simpleModule
+simpleModule           16384  0
+sudo rmmod simpleModule 
+sudo insmod simpleModule.ko simple_param=-5
+insmod: ERROR: could not insert module simpleModule.ko: Input/output error
+sudo insmod simpleModule.ko simple_param=3
+insmod: ERROR: could not insert module simpleModule.ko: Module has wrong symbol version
+lsmod |grep simpleModule 
