@@ -1,0 +1,54 @@
+# test №1 -----------------------
+
+$ sudo insmod module_1.ko param=0
+$ lsmod | grep module_1
+module_1               16384  0
+$ sudo dmesg
+[13579.911050] module loadd
+[13596.390610] module unloaded
+
+
+# test №2 -----------------------
+$ lsmod | grep module_1
+$ sudo insmod module_1.ko param=10
+module_1               16384  0
+[13834.720334] module loadd
+[13834.720338] param > 0: ERROR 10
+[13834.720342] do_init_module: 'module_1'->init suspiciously returned 10, it should follow 0/-E convention
+               do_init_module: loading module anyway...
+[13834.720355] CPU: 1 PID: 17029 Comm: insmod Tainted: G           OE    4.15.0-36-generic #39~16.04.1-Ubuntu
+[13834.720357] Hardware name: Gigabyte Technology Co., Ltd. GA-78LMT-S2/GA-78LMT-S2, BIOS F2 05/08/2012
+[13834.720360] Call Trace:
+[13834.720375]  dump_stack+0x63/0x8b
+[13834.720383]  do_init_module+0x8d/0x219
+[13834.720389]  load_module+0x1937/0x1d80
+[13834.720398]  ? ima_post_read_file+0x83/0xa0
+[13834.720405]  SYSC_finit_module+0xe5/0x120
+[13834.720410]  ? SYSC_finit_module+0xe5/0x120
+[13834.720417]  SyS_finit_module+0xe/0x10
+[13834.720423]  do_syscall_64+0x73/0x130
+[13834.720430]  entry_SYSCALL_64_after_hwframe+0x3d/0xa2
+[13834.720435] RIP: 0033:0x7f90f92aa4d9
+[13834.720438] RSP: 002b:00007fffc7f98e98 EFLAGS: 00000202 ORIG_RAX: 0000000000000139
+[13834.720443] RAX: ffffffffffffffda RBX: 00005626bf544230 RCX: 00007f90f92aa4d9
+[13834.720446] RDX: 0000000000000000 RSI: 00005626bf543010 RDI: 0000000000000003
+[13834.720448] RBP: 00005626bf543010 R08: 0000000000000000 R09: 00005626bf543010
+[13834.720450] R10: 0000000000000003 R11: 0000000000000202 R12: 0000000000000000
+[13834.720453] R13: 00005626bf544bf0 R14: 0000000000000000 R15: 00005626bf543010
+[13851.025631] module unloaded
+
+
+# test №3 -----------------------
+$ sudo insmod module_1.ko param=-10
+insmod: ERROR: could not insert module module_1.ko: No child processes
+$ lsmod | grep module_1
+$ sudo rmmod module_1
+rmmod: ERROR: Module module_1 is not currently loaded
+$ sudo dmesg
+[13969.165789] module loadd
+[13969.165792] param < 0: ERROR -10
+[14013.772150] mce: [Hardware Error]: Machine check events logged
+[14013.772163] [Hardware Error]: Corrected error, no action required.
+[14013.772171] [Hardware Error]: CPU:0 (10:6:3) MC1_STATUS[Over|CE|-|-|-]: 0xd000000000000171
+[14013.772178] [Hardware Error]: MC1 Error: Copyback Parity/Victim error.
+[14013.772184] [Hardware Error]: cache level: L1, tx: INSN, mem-tx: EV
