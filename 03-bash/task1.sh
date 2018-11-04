@@ -103,9 +103,94 @@ function print_system_info()
 	>>"$1" echo "----\"EOF\"----"
 }
 
+function create_dir_if_not_exists_for_file()
+{
+	dir_path=$(dirname "$1")
+	if ! [ -d "$dir_path" ]
+	then
+		echo "dir %dir_path non exists, create new one..."
+		mkdir -p "$1"
+	fi
+}
 
-num_files="0"
-file_path=""
+function rename_old_file()
+{
+	if [ -z "$1" ]; then
+		echo "fatal error rename_old_file"
+		exit -2;
+	fi
+
+	local f_name=$(basename "$1")
+	local file_ext=$([[ "$f_name" = *.* ]] && echo ".${f_name##*.}" || echo '')
+	local f_name="${f_name%.*}"
+	local dir_path=$(dirname "$1")
+
+	local cur_date=$(date +%Y%m%d)
+
+	#find all files that were created today 
+	local file_last=$(ls 2>/dev/null $dir_path/$f_name-$cur_date-*$file_ext | sort -r | head -1)
+   	local lastid=$(echo "$file_last" | cut -d "-" -f3 | cut -d "." -f1)
+	
+	lastid=$((lastid+1))
+
+	#rename existingfile
+
+	local new_file_name="$dir_path/$f_name-$cur_date-$lastid$file_ext"
+
+	mv "$1" "$new_file_name"
+
+	echo " old report $1  was renamed to $new_file_name"	
+}
+
+function clean_up_working_dir()
+{
+	#$1 num files
+	#$2 file path
+
+	if [ [ -z "$1" ] or [ -z "$2"] ] ; then
+		echo "fatal error clan_up_working_dir"
+		exit -2;
+	fi
+
+	local file_num="$1";
+	local f_name=$(basename "$2")
+	local f_name="${f_name%.*}"
+	local dir_path=$(dirname "$2")
+	local cur_date=$(date +%Y%m%d)
+
+
+	local files_to_be_deleted=($(ls 2>/dev/null $dir_path/$f_name-$cur_date-* | sort))
+	local total_number_of_files=${#files_to_be_deleted[@]}
+
+	for (( i=0; i<$total_number_of_files-$file_num; i++ ));
+	do
+		local file_will_be_deleted=${files_to_be_deleted[$i]}
+
+		read -p "$file_will_be_deleted  will be deleted press ENTER to continue"
+     	rm "$file_will_be_deleted"
+    done
+
+}
+
+function safe_create_result_file()
+{
+	if [ -z "$1" ]
+	then
+		result_file='~/bash/task1.out'
+	else
+		result_file="$1"
+	fi
+
+	if ! [ -e "$result_file" ]; then
+		create_dir_if_not_exists_for_file		
+	else
+		rename_old_file "$result_file"
+	fi
+
+	file_path="$result_file"
+
+
+}
 
 #parse command line 
 #./task1.sh [-h|--help] [-n num] [file]
@@ -127,6 +212,11 @@ while (( "$#" )); do
   shift 
 done
 
-echo "num_files $num_files"
-print_system_info "$file_path"
+safe_create_result_file "$file_path"
 
+if [ -n  "$num_files" ]
+then
+	clean_up_working_dir "$num_files" "$file_path"
+fi
+
+print_system_info "$file_path"
