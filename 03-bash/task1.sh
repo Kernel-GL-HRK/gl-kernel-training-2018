@@ -54,9 +54,6 @@ parse_number(){
 parse_file_name(){
 	local m_filename=$2
 	local m_dirname=$3
-	echo "fffff>>>  $m_filename"
-	echo "ddddd>>>> $m_dirname"
-	echo "11111>>>> $1"
 	if ! [[ -z "$1" ]] ; then
 		eval $m_filename=$(basename $1)
 		eval $m_dirname=$(dirname $1)
@@ -84,8 +81,6 @@ get_current_value(){
 remove_files(){
 	# $1 - dir
 	# $2 - cnt
-	echo "dir >> $1"
-	echo "cnt >> $2"
 	if [[ -d $1 && $2 > 0 ]] ; then
 		cd $1
 		local cnt=$(ls $1 | wc -l)
@@ -172,9 +167,6 @@ if ! [[ -z "$U_FILENAME" ]]; then
 	RES_FILE=$U_DIRNAME/$U_FILENAME
 	RES_DIR=$U_DIRNAME
 fi
-
-echo "u_dir >> $U_DIRNAME"
-echo "u_fn  >> $U_FILENAME"
 
 COUNTER_FILE="$RES_DIR/.value"
 
