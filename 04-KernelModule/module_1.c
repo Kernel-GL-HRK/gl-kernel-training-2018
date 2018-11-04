@@ -13,10 +13,10 @@ static int __init hello_init(void)
 
 	if (param > 0)
 		pr_err("param > 0: ERROR %d", param);
-		else if
-			(param < 0) pr_err("param < 0: ERROR %d", param);
-			else
-				pr_debug("param=0: module successfully loaded");
+	else if (param < 0)
+		pr_err("param < 0: ERROR %d", param);
+	else
+		pr_err("param=0: module successfully loaded");
 	return param;
 }
 
