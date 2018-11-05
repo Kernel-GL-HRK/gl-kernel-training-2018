@@ -1,0 +1,19 @@
+spasichn@spasichn-ubuntu:~/gl-kernel-training-2018/04-KernelModule/simple_kernel_module$ sudo insmod simple_kernel_module.ko num=2 str=serg
+[sudo] password for spasichn:
+spasichn@spasichn-ubuntu:~/gl-kernel-training-2018/04-KernelModule/simple_kernel_module$ sudo rmmod simple_kernel_module
+
+spasichn@spasichn-ubuntu:~/gl-kernel-training-2018/04-KernelModule/simple_kernel_module$ dmesg
+...
+[11056.351973] KERN_EMERG Simple: debug print.
+[11056.351976] KERN_ALERT Simple: debug print.
+[11056.351977] KERN_CRIT Simple: debug print.
+[11056.351977] KERN_ERR Simple: debug print.
+[11056.351978] KERN_WARNING Simple: debug print.
+[11056.351978] KERN_NOTICE Simple: debug print.
+[11056.351979] KERN_DEBUG Simple: debug print.
+[11056.351979] KERN_INFO Simple: debug print.
+[11056.351980] Str param: serg
+[11056.351980] Num param: 2
+[11056.351980] Module loaded with param: 2
+[11068.783323] Simple: Module exited.
+

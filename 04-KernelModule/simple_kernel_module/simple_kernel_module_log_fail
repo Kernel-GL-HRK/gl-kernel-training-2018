@@ -1,0 +1,17 @@
+spasichn@spasichn-ubuntu:~/gl-kernel-training-2018/04-KernelModule/simple_kernel_module$ sudo insmod simple_kernel_module.ko num=0 str=serg
+insmod: ERROR: could not insert module simple_kernel_module.ko: Invalid parameters
+
+spasichn@spasichn-ubuntu:~/gl-kernel-training-2018/04-KernelModule/simple_kernel_module$ dmesg
+...
+[11424.878620] KERN_EMERG Simple: debug print.
+[11424.878622] KERN_ALERT Simple: debug print.
+[11424.878623] KERN_CRIT Simple: debug print.
+[11424.878624] KERN_ERR Simple: debug print.
+[11424.878625] KERN_WARNING Simple: debug print.
+[11424.878625] KERN_NOTICE Simple: debug print.
+[11424.878625] KERN_DEBUG Simple: debug print.
+[11424.878626] KERN_INFO Simple: debug print.
+[11424.878626] Str param: serg
+[11424.878627] Num param: 0
+[11424.878627] Invalid param: 0
+
