@@ -1,10 +1,9 @@
-all: hello
 
 hello: main.o
-	gcc -o hello main.o -Wall -lc
+	gcc -o hello main.o -lc
 
 main.o: main.c
-	gcc -c main.c -Wall
+	gcc -c main.c -o main.o
 
 clean:
-	rm *.o hello
+	-rm *.o main a.out
