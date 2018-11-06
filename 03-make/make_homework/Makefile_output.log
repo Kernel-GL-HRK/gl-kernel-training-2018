@@ -1,0 +1,18 @@
+ovdiyuk@ovdiyuk:~/gl-kernel-training-2018/03-make/make_homework$ make
+cat  "./pechka/gaz.txt" "./pechka/pechka.txt" > pechka.o
+cat  "./magazin/ovoshchi.txt" "./stol/kasha.txt" > magazin.o
+cat  "./stol/kasha.txt" "./stol/kastrulya.txt" pechka.o magazin.o > stol.o #> to  the target of the rule
+cp stol.o sup.txt  #copy the first dependency to target file
+
+ovdiyuk@ovdiyuk:~/gl-kernel-training-2018/03-make/make_homework$ make clean
+rm -rf *.o sup.txt 
+
+ovdiyuk@ovdiyuk:~/gl-kernel-training-2018/03-make/make_homework$ make TARGET=sup_target.txt
+cat  "./pechka/gaz.txt" "./pechka/pechka.txt" > pechka.o
+cat  "./magazin/ovoshchi.txt" "./stol/kasha.txt" > magazin.o
+cat  "./stol/kasha.txt" "./stol/kastrulya.txt" pechka.o magazin.o > stol.o #> to  the target of the rule
+cp stol.o sup_target.txt #copy the first dependency to target file
+ovdiyuk@ovdiyuk:~/gl-kernel-training-2018/03-make/make_homework$ make cleanrm -rf *.o sup.txt 
+
+ovdiyuk@ovdiyuk:~/gl-kernel-training-2018/03-make/make_homework$ make clean TARGET=sup_target.txt
+rm -rf *.o sup_target.txt
