@@ -15,10 +15,15 @@ static ssize_t uppercase_conv_size;
 
 static char lowercase_conv[LO_CONV_MAXLEN + 1];
 
+static int lo_stat_r_called;
+static int lo_stat_w_called;
+static int lo_stat_chars;
 
 static ssize_t lowercase_show(struct class *class,
 				struct class_attribute *attr, char *buf)
 {
+	lo_stat_r_called++;
+
 	strcpy(buf, lowercase_conv);
 	return strlen(buf);
 }
@@ -27,25 +32,41 @@ static ssize_t lowercase_store(struct class *class,
 				struct class_attribute *attr, const char *buf,
 				size_t count)
 {
+	lo_stat_w_called++;
+
 	size_t cpy_count = (count < LO_CONV_MAXLEN) ? count : LO_CONV_MAXLEN;
 
 	strncpy(lowercase_conv, buf, cpy_count);
 
 	/*
-	 * explicitly make string null-terminated in case
-	 * if cpy_count is equal to LO_CONV_MAXLEN
+	 * explicitly make string null-terminated
 	 */
 	lowercase_conv[cpy_count] = '\0';
 
 	int i;
 
-	for (i = 0; i < cpy_count; i++)
+	for (i = 0; i < cpy_count; i++) {
+		lo_stat_chars++;
 		lowercase_conv[i] = tolower(lowercase_conv[i]);
+	}
 
 	return count;
 }
 
 CLASS_ATTR_RW(lowercase);
+
+static ssize_t lo_stat_show(struct class *class,
+				struct class_attribute *attr, char *buf)
+{
+	sprintf(buf, "Lowercase converter statistics:\n"
+	"Store was called %d times\n"
+	"Show was called %d times\n"
+	"Total characters processed: %d\n",
+	lo_stat_r_called, lo_stat_w_called, lo_stat_chars);
+	return strlen(buf);
+}
+
+CLASS_ATTR_RO(lo_stat);
 
 static int up_stat_was_read;
 static int up_stat_r_called;
@@ -111,8 +132,8 @@ static ssize_t up_stat_read(struct file *file, char __user *pbuf,
 	char result_buf[256];
 
 	sprintf(result_buf, "Uppercase converter statistics:\n"
-	"Write was called %d times\n"
 	"Read was called %d times\n"
+	"Write was called %d times\n"
 	"Total characters processed: %d\n",
 	up_stat_r_called, up_stat_w_called, up_stat_chars);
 
@@ -147,10 +168,13 @@ static struct proc_dir_entry *ent;
 static struct proc_dir_entry *up_conv_stat;
 
 static int conv_file_created;
+static int stat_file_created;
 static struct class *lowercase_conv_class;
 
 static void converter_exit(void)
 {
+	if (stat_file_created)
+		class_remove_file(lowercase_conv_class, &class_attr_lo_stat);
 
 	if (conv_file_created)
 		class_remove_file(lowercase_conv_class, &class_attr_lowercase);
@@ -208,6 +232,16 @@ static int converter_init(void)
 	}
 
 	conv_file_created = 1;
+
+	creation_err = class_create_file(lowercase_conv_class,
+					 &class_attr_lo_stat);
+	if (creation_err) {
+		pr_err("lowercase converter: error creating sysfs stat attribute\n");
+		converter_exit();
+		return creation_err;
+	}
+
+	stat_file_created = 1;
 
 	pr_info("module loaded\n");
 	return 0;
