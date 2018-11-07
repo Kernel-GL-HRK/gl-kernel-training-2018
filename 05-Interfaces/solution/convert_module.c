@@ -47,9 +47,15 @@ static ssize_t lowercase_store(struct class *class,
 
 CLASS_ATTR_RW(lowercase);
 
+static int up_stat_was_read;
+static int up_stat_r_called;
+static int up_stat_w_called;
+static int up_stat_chars;
+
 static ssize_t up_conv_write(struct file *file, const char __user *pbuf,
 				size_t count, loff_t *ppos)
 {
+	up_stat_w_called++;
 
 	if (uppercase_conv_size == UP_CONV_MAXLEN)
 		return -ENOMEM;
@@ -65,8 +71,11 @@ static ssize_t up_conv_write(struct file *file, const char __user *pbuf,
 
 	int i;
 
-	for (i = *ppos; i < (*ppos + copy_count); i++)
+
+	for (i = *ppos; i < (*ppos + copy_count); i++) {
+		up_stat_chars++;
 		uppercase_conv[i] = toupper(uppercase_conv[i]);
+	}
 
 	*ppos += copy_count;
 
@@ -76,6 +85,7 @@ static ssize_t up_conv_write(struct file *file, const char __user *pbuf,
 static ssize_t up_conv_read(struct file *file, char __user *pbuf,
 				size_t count, loff_t *ppos)
 {
+	up_stat_r_called++;
 	size_t bytes_left = uppercase_conv_size - *ppos;
 
 	size_t read_amount = min(bytes_left, count);
@@ -91,14 +101,50 @@ static ssize_t up_conv_read(struct file *file, char __user *pbuf,
 	return read_amount;
 }
 
+static ssize_t up_stat_read(struct file *file, char __user *pbuf,
+				size_t count, loff_t *ppos)
+{
+	if (up_stat_was_read)
+		return 0;
+
+	//256 should be enough
+	char result_buf[256];
+
+	sprintf(result_buf, "Uppercase converter statistics:\n"
+	"Write was called %d times\n"
+	"Read was called %d times\n"
+	"Total characters processed: %d\n",
+	up_stat_r_called, up_stat_w_called, up_stat_chars);
+
+	if (copy_to_user(pbuf, result_buf, strlen(result_buf)))
+		return -EFAULT;
+
+	up_stat_was_read = 1;
+	return strlen(result_buf);
+}
+
+static int up_stat_open(struct inode *n, struct file *f)
+{
+	up_stat_was_read = 0;
+	return 0;
+}
+
+
 const static struct file_operations uppercase_ops = {
 	.owner = THIS_MODULE,
 	.read = up_conv_read,
 	.write = up_conv_write,
 };
 
+const static struct file_operations up_stat_ops = {
+	.owner = THIS_MODULE,
+	.read = up_stat_read,
+	.open = up_stat_open,
+};
+
 static struct proc_dir_entry *uppercase_conv_dir;
 static struct proc_dir_entry *ent;
+static struct proc_dir_entry *up_conv_stat;
 
 static int conv_file_created;
 static struct class *lowercase_conv_class;
@@ -127,10 +173,18 @@ static int converter_init(void)
 		return -ENOMEM;
 	}
 
-	ent = proc_create("uppercase", 0666, 
+	ent = proc_create("uppercase", 0666,
 			uppercase_conv_dir, &uppercase_ops);
 	if (ent == NULL) {
 		pr_err("uppercase converter: error creating procfs entry\n");
+		converter_exit();
+		return -ENOMEM;
+	}
+
+	up_conv_stat = proc_create("statistics", 0444,
+			uppercase_conv_dir, &up_stat_ops);
+	if (up_conv_stat == NULL) {
+		pr_err("uppercase converter: error creating usage statistics entry\n");
 		converter_exit();
 		return -ENOMEM;
 	}
