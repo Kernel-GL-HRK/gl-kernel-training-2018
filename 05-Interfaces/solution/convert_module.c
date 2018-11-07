@@ -3,12 +3,49 @@
 #include <linux/err.h>
 #include <linux/proc_fs.h>
 #include <linux/uaccess.h>
+#include <linux/device.h>
 #include <linux/ctype.h>
 
-#define UP_CONV_MAXLEN PAGE_SIZE
+#define UP_CONV_MAXLEN 128
 
 static char uppercase_conv[UP_CONV_MAXLEN + 1];
 static ssize_t uppercase_conv_size;
+
+#define LO_CONV_MAXLEN 128
+
+static char lowercase_conv[LO_CONV_MAXLEN + 1];
+
+
+static ssize_t lowercase_show(struct class *class,
+				struct class_attribute *attr, char *buf)
+{
+	strcpy(buf, lowercase_conv);
+	return strlen(buf);
+}
+
+static ssize_t lowercase_store(struct class *class,
+				struct class_attribute *attr, const char *buf,
+				size_t count)
+{
+	size_t cpy_count = (count < LO_CONV_MAXLEN) ? count : LO_CONV_MAXLEN;
+
+	strncpy(lowercase_conv, buf, cpy_count);
+
+	/*
+	 * explicitly make string null-terminated in case
+	 * if cpy_count is equal to LO_CONV_MAXLEN
+	 */
+	lowercase_conv[cpy_count] = '\0';
+
+	int i;
+
+	for (i = 0; i < cpy_count; i++)
+		lowercase_conv[i] = tolower(lowercase_conv[i]);
+
+	return count;
+}
+
+CLASS_ATTR_RW(lowercase);
 
 static ssize_t up_conv_write(struct file *file, const char __user *pbuf,
 				size_t count, loff_t *ppos)
@@ -62,22 +99,55 @@ const static struct file_operations uppercase_ops = {
 
 static struct proc_dir_entry *ent;
 
+static int conv_file_created;
+static struct class *lowercase_conv_class;
+
+static void converter_exit(void)
+{
+
+	if (conv_file_created)
+		class_remove_file(lowercase_conv_class, &class_attr_lowercase);
+
+	if (lowercase_conv_class)
+		class_destroy(lowercase_conv_class);
+
+	if (ent)
+		proc_remove(ent);
+
+	pr_info("module removed from kernel\n");
+}
+
 static int converter_init(void)
 {
 	ent = proc_create("to_uppercase", 0666, NULL, &uppercase_ops);
 	if (ent == NULL) {
 		pr_err("uppercase converter: error creating procfs entry\n");
+		converter_exit();
 		return -ENOMEM;
 	}
 
+	lowercase_conv_class = class_create(THIS_MODULE, "to_lowercase");
+	if (lowercase_conv_class == NULL) {
+		pr_err("lowercase converter: error creating sysfs class\n");
+		converter_exit();
+		return -ENOMEM;
+	}
+
+
+	int creation_err;
+
+	creation_err = class_create_file(lowercase_conv_class,
+					&class_attr_lowercase);
+	if (creation_err) {
+		pr_err("lowercase converter: error creating sysfs class attribute\n");
+		converter_exit();
+		return creation_err;
+	}
+
+	conv_file_created = 1;
+
 	pr_info("module loaded\n");
 	return 0;
-}
-
-static void converter_exit(void)
-{
-	proc_remove(ent);
-	pr_info("module removed from kernel\n");
 }
 
 module_init(converter_init);
