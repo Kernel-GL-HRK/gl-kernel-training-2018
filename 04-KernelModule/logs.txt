@@ -1,0 +1,33 @@
+rnikishyn@rnikishyn-Lenovo-ideapad-320-15AST:~/Course/gl-kernel-training-2018/04-KernelModule$ sudo insmod glModule.ko debug=0
+insmod: ERROR: could not insert module glModule.ko: File exists
+rnikishyn@rnikishyn-Lenovo-ideapad-320-15AST:~/Course/gl-kernel-training-2018/04-KernelModule$ sudo rmmod glModule 
+rnikishyn@rnikishyn-Lenovo-ideapad-320-15AST:~/Course/gl-kernel-training-2018/04-KernelModule$ dmesg 
+[ 4099.799799] Goodbye, world!
+rnikishyn@rnikishyn-Lenovo-ideapad-320-15AST:~/Course/gl-kernel-training-2018/04-KernelModule$ dmesg -C
+dmesg: klogctl failed: Операция не позволена
+rnikishyn@rnikishyn-Lenovo-ideapad-320-15AST:~/Course/gl-kernel-training-2018/04-KernelModule$ sudo dmesg -C
+rnikishyn@rnikishyn-Lenovo-ideapad-320-15AST:~/Course/gl-kernel-training-2018/04-KernelModule$ sudo insmod glModule.ko debug=0
+rnikishyn@rnikishyn-Lenovo-ideapad-320-15AST:~/Course/gl-kernel-training-2018/04-KernelModule$ dmesg 
+[ 4119.872407] Hello, world!
+rnikishyn@rnikishyn-Lenovo-ideapad-320-15AST:~/Course/gl-kernel-training-2018/04-KernelModule$ sudo rmmod glModule 
+rnikishyn@rnikishyn-Lenovo-ideapad-320-15AST:~/Course/gl-kernel-training-2018/04-KernelModule$ dmesg 
+[ 4119.872407] Hello, world!
+[ 4130.436436] Goodbye, world!
+rnikishyn@rnikishyn-Lenovo-ideapad-320-15AST:~/Course/gl-kernel-training-2018/04-KernelModule$ sudo dmesg -C
+rnikishyn@rnikishyn-Lenovo-ideapad-320-15AST:~/Course/gl-kernel-training-2018/04-KernelModule$ sudo insmod glModule.ko debug=-1
+insmod: ERROR: could not insert module glModule.ko: Operation not permitted
+rnikishyn@rnikishyn-Lenovo-ideapad-320-15AST:~/Course/gl-kernel-training-2018/04-KernelModule$ sudo insmod glModule.ko debug=-2
+insmod: ERROR: could not insert module glModule.ko: Unknown symbol in module
+rnikishyn@rnikishyn-Lenovo-ideapad-320-15AST:~/Course/gl-kernel-training-2018/04-KernelModule$ sudo insmod glModule.ko debug=-3
+insmod: ERROR: could not insert module glModule.ko: Module has wrong symbol version
+rnikishyn@rnikishyn-Lenovo-ideapad-320-15AST:~/Course/gl-kernel-training-2018/04-KernelModule$ sudo insmod glModule.ko debug=0
+rnikishyn@rnikishyn-Lenovo-ideapad-320-15AST:~/Course/gl-kernel-training-2018/04-KernelModule$ sudo rmmod glModule 
+rnikishyn@rnikishyn-Lenovo-ideapad-320-15AST:~/Course/gl-kernel-training-2018/04-KernelModule$ dmesg 
+[ 4149.277270] Hello, world!
+[ 4153.098773] Hello, world!
+[ 4157.277270] Hello, world!
+[ 4164.743892] Hello, world!
+[ 4170.533799] Goodbye, world!
+rnikishyn@rnikishyn-Lenovo-ideapad-320-15AST:~/Course/gl-kernel-training-2018/04-KernelModule$ lsmod | grep gl
+glue_helper            16384  1 aesni_intel
+rnikishyn@rnikishyn-Lenovo-ideapad-320-15AST:~/Course/gl-kernel-training-2018/04-KernelModule$ 
