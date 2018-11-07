@@ -1,0 +1,25 @@
+[30724.279272]  Hello, world! my param=0
+[30724.279906] Goodbye, world!
+insmod: ERROR: could not insert module hello_printk.ko: Operation not permitted
+rmmod: ERROR: Module hello_printk is not currently loaded
+[30724.309334]  Hello, world! my param=1
+insmod: ERROR: could not insert module hello_printk.ko: Unknown symbol in module
+rmmod: ERROR: Module hello_printk is not currently loaded
+[30724.372616]  Hello, world! my param=2
+insmod: ERROR: could not insert module hello_printk.ko: Module has wrong symbol version
+rmmod: ERROR: Module hello_printk is not currently loaded
+[30724.445020]  Hello, world! my param=3
+insmod: ERROR: could not insert module hello_printk.ko: Interrupted system call
+rmmod: ERROR: Module hello_printk is not currently loaded
+[30724.500891]  Hello, world! my param=4
+insmod: ERROR: could not insert module hello_printk.ko: Input/output error
+rmmod: ERROR: Module hello_printk is not currently loaded
+[30724.544604]  Hello, world! my param=5
+insmod: ERROR: could not insert module hello_printk.ko: No such device or address
+rmmod: ERROR: Module hello_printk is not currently loaded
+[30724.581358]  Hello, world! my param=6
+insmod: ERROR: could not insert module hello_printk.ko: Argument list too long
+rmmod: ERROR: Module hello_printk is not currently loaded
+[30724.638908]  Hello, world! my param=7
+insmod: ERROR: could not insert module hello_printk.ko: Invalid module format
+rmmod: ERROR: Module hello_printk is not currently loaded
