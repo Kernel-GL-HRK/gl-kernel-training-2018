@@ -97,6 +97,7 @@ const static struct file_operations uppercase_ops = {
 	.write = up_conv_write,
 };
 
+static struct proc_dir_entry *uppercase_conv_dir;
 static struct proc_dir_entry *ent;
 
 static int conv_file_created;
@@ -111,15 +112,23 @@ static void converter_exit(void)
 	if (lowercase_conv_class)
 		class_destroy(lowercase_conv_class);
 
-	if (ent)
-		proc_remove(ent);
+	//tihis should recursively remove procfs subtree
+	if (uppercase_conv_dir)
+		proc_remove(uppercase_conv_dir);
 
 	pr_info("module removed from kernel\n");
 }
 
 static int converter_init(void)
 {
-	ent = proc_create("to_uppercase", 0666, NULL, &uppercase_ops);
+	uppercase_conv_dir = proc_mkdir("to_uppercase", NULL);
+	if (uppercase_conv_dir == NULL) {
+		pr_err("uppercase converter: error creating procfs directory\n");
+		return -ENOMEM;
+	}
+
+	ent = proc_create("uppercase", 0666, 
+			uppercase_conv_dir, &uppercase_ops);
 	if (ent == NULL) {
 		pr_err("uppercase converter: error creating procfs entry\n");
 		converter_exit();
