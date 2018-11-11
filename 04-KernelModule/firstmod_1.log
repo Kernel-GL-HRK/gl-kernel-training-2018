@@ -1,0 +1,8 @@
+$ sudo insmod firstmod.ko 
+$ dmesg
+[26461.476995] Hello, world!
+$ sudo rmmod firstmod 
+$ dmesg
+[26461.476995] Hello, world!
+[26482.600862] Goodbye, world!
+
