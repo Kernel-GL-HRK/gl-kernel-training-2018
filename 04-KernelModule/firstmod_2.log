@@ -1,0 +1,13 @@
+$ sudo insmod firstmod.ko 
+$ sudo dmesg -c
+[ 4863.955590] Hello, world!
+[ 4863.955592] value: 0
+$ sudo rmmod firstmod 
+$ sudo dmesg -c
+[ 4879.105458] Goodbye, world!
+$ sudo insmod firstmod.ko value=1
+insmod: ERROR: could not insert module firstmod.ko: Invalid parameters
+$ sudo dmesg -c
+[ 4903.671263] Hello, world!
+[ 4903.671266] value: 1
+
