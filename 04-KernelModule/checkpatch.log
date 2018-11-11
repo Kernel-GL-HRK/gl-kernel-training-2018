@@ -1,0 +1,26 @@
+WARNING: Symbolic permissions 'S_IRUGO' are not preferred. Consider using octal permissions '0444'.
+#12: FILE: /media/d_el/309444109443D6CE/workspace/c_cpp/test/gl-kernel-training-2018/04-KernelModule/firstmod.c:12:
++module_param(value, int, S_IRUGO);
+
+WARNING: Prefer [subsystem eg: netdev]_dbg([subsystem]dev, ... then dev_dbg(dev, ... then pr_debug(...  to printk(KERN_DEBUG ...
+#16: FILE: /media/d_el/309444109443D6CE/workspace/c_cpp/test/gl-kernel-training-2018/04-KernelModule/firstmod.c:16:
++	printk(KERN_DEBUG "Hello, world!\n");
+
+WARNING: Prefer [subsystem eg: netdev]_dbg([subsystem]dev, ... then dev_dbg(dev, ... then pr_debug(...  to printk(KERN_DEBUG ...
+#17: FILE: /media/d_el/309444109443D6CE/workspace/c_cpp/test/gl-kernel-training-2018/04-KernelModule/firstmod.c:17:
++	printk(KERN_DEBUG "value: %i\n", value);
+
+WARNING: Prefer [subsystem eg: netdev]_dbg([subsystem]dev, ... then dev_dbg(dev, ... then pr_debug(...  to printk(KERN_DEBUG ...
+#26: FILE: /media/d_el/309444109443D6CE/workspace/c_cpp/test/gl-kernel-training-2018/04-KernelModule/firstmod.c:26:
++	printk(KERN_DEBUG "Goodbye, world!\n");
+
+total: 0 errors, 4 warnings, 32 lines checked
+
+NOTE: For some of the reported defects, checkpatch may be able to
+      mechanically convert to the typical style using --fix or --fix-inplace.
+
+/media/d_el/309444109443D6CE/workspace/c_cpp/test/gl-kernel-training-2018/04-KernelModule/firstmod.c has style problems, please review.
+
+NOTE: If any of the errors are false positives, please report
+      them to the maintainer, see CHECKPATCH in MAINTAINERS.
+
