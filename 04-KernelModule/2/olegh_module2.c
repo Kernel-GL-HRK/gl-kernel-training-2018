@@ -1,3 +1,10 @@
+// SPDX-License-Identifier: AFL 3.0
+/* Copyright (C) 2018
+ * Author: Oleg Khokhlov <oleg.khokhlov.ua@gmail.com>
+ *
+ * second test kernel module - test string and integer module params
+ */
+
 #include <linux/init.h>
 #include <linux/module.h>
 #include <linux/kernel.h>
@@ -13,15 +20,15 @@ MODULE_PARM_DESC(sParam, "sParam: string parameter");
 
 static int __init oleghfm_init(void)
 {
-	printk(KERN_DEBUG "OlegH_Mod2: Hello world! from second module!\n");
-	printk(KERN_DEBUG "OlegH_Mod2: sParam: %s\n", sParam);
-	printk(KERN_DEBUG "OlegH_Mod2: iParam = %d\n", iParam);
+	pr_debug("OlegH_Mod2: Hello world! from second module!\n");
+	pr_debug("OlegH_Mod2: sParam: %s\n", sParam);
+	pr_debug("OlegH_Mod2: iParam = %d\n", iParam);
 	return iParam;
 }
 
 static void __exit oleghfm_exit(void)
 {
-	printk(KERN_DEBUG "OlegH_Mod2: Goodbye!\n");
+	pr_debug("OlegH_Mod2: Goodbye!\n");
 }
 
 module_init(oleghfm_init);

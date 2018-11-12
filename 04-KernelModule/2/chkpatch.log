@@ -1,31 +1,5 @@
-root@olegh-ideapad:~/gl-kernel-training-2018/04-KernelModule# ./chkpatch.sh 2/olegh_module2.c
-WARNING: Missing or malformed SPDX-License-Identifier tag in line 1
-#1: FILE: /home/olegh/gl-kernel-training-2018/04-KernelModule/2/olegh_module2.c:1:
-+#include <linux/init.h>
+$ ../chkpatch.sh olegh_module2.c
+total: 0 errors, 0 warnings, 41 lines checked
 
-WARNING: Prefer [subsystem eg: netdev]_dbg([subsystem]dev, ... then dev_dbg(dev, ... then pr_debug(...  to printk(KERN_DEBUG ...
-#16: FILE: /home/olegh/gl-kernel-training-2018/04-KernelModule/2/olegh_module2.c:16:
-+	printk(KERN_DEBUG "OlegH_Mod2: Hello world! from second module!\n");
-
-WARNING: Prefer [subsystem eg: netdev]_dbg([subsystem]dev, ... then dev_dbg(dev, ... then pr_debug(...  to printk(KERN_DEBUG ...
-#17: FILE: /home/olegh/gl-kernel-training-2018/04-KernelModule/2/olegh_module2.c:17:
-+	printk(KERN_DEBUG "OlegH_Mod2: sParam: %s\n", sParam);
-
-WARNING: Prefer [subsystem eg: netdev]_dbg([subsystem]dev, ... then dev_dbg(dev, ... then pr_debug(...  to printk(KERN_DEBUG ...
-#18: FILE: /home/olegh/gl-kernel-training-2018/04-KernelModule/2/olegh_module2.c:18:
-+	printk(KERN_DEBUG "OlegH_Mod2: iParam = %d\n", iParam);
-
-WARNING: Prefer [subsystem eg: netdev]_dbg([subsystem]dev, ... then dev_dbg(dev, ... then pr_debug(...  to printk(KERN_DEBUG ...
-#24: FILE: /home/olegh/gl-kernel-training-2018/04-KernelModule/2/olegh_module2.c:24:
-+	printk(KERN_DEBUG "OlegH_Mod2: Goodbye!\n");
-
-total: 0 errors, 5 warnings, 34 lines checked
-
-NOTE: For some of the reported defects, checkpatch may be able to
-      mechanically convert to the typical style using --fix or --fix-inplace.
-
-/home/olegh/gl-kernel-training-2018/04-KernelModule/2/olegh_module2.c has style problems, please review.
-
-NOTE: If any of the errors are false positives, please report
-      them to the maintainer, see CHECKPATCH in MAINTAINERS.
-root@olegh-ideapad:~/gl-kernel-training-2018/04-KernelModule# 
+/home/olegh/gl-kernel-training-2018/04-KernelModule/2/olegh_module2.c has no obvious style problems and is ready for submission.
+$
