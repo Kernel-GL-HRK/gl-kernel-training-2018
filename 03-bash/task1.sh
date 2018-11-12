@@ -97,7 +97,7 @@ make_info_file() {
 	echo "CPU: \"$m_proc\"" >>$info_file
 	# local m_proc=$(sudo dmidecode -t processor | grep Version |  cut -d':' -f2- | xargs)
 	local m_mem=$(cat /proc/meminfo | grep 'MemTotal:' | cut -d':' -f2 | xargs | cut -d' ' -f1)
-	m_mem=$( (m_mem / 1024) )
+	m_mem=$(( $m_mem / 1024 ))
 	echo "RAM: $m_mem MB" >>$info_file
 	local m_pr_name=$(sudo dmidecode -t baseboard | grep 'Product Name' | cut -d':' -f2- | xargs)
 	local m_pr_mb=$(sudo dmidecode -t baseboard | grep 'Manufacturer' | cut -d':' -f2- | xargs)
