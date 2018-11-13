@@ -3,9 +3,7 @@
  * Copyright (C) 2018
  * Author: Oleg Khokhlov <oleg.khokhlov.ua@gmail.com>
  *
- * This work is licensed under the terms of the GNU GPL, version 2.
- *
- * first test kernel module
+ * ProcFS kernel module for Capitalize text files.
  */
 
 #include <linux/init.h>
@@ -19,6 +17,11 @@
 
 // 1. Create a simple string uppercase converter using procfs
 // (write: input string, read: that string in uppercase).
+
+// 3. Add read only attributes for both filesystems showing statistics
+// (using cat): e.g. total calls, total characters processed,
+// characters converted etc).
+
 
 // --------------- MODULE PARAMETERS DESCRIPTION -------------------
 //int iParam;
@@ -35,9 +38,15 @@ char ConvBuff[CONV_BUFF_MAX_LEN];
 uint32_t ConvSize;
 uint32_t ConvPos;
 
+struct ConvStat {
+	unsigned int TotalCalls;
+	unsigned int TotalChars;
+	unsigned int CharsConverted;
+} ConvStat;
+
 static struct proc_dir_entry *procfs_dir;
 static struct proc_dir_entry *procfs_ent_rw;
-//static struct proc_dir_entry *procfs_ent_stat;
+static struct proc_dir_entry *procfs_ent_stat;
 
 #define PROCFS_DIR_NAME   "omod5"
 #define PROCFS_RW_NAME    "toupper"
@@ -74,6 +83,7 @@ static ssize_t procfs_write(struct file *file,
 {
 	char *p;
 	uint32_t c, n;
+	char ch;
 
 	if (ConvPos < ConvSize)
 		return 0;
@@ -86,8 +96,14 @@ static ssize_t procfs_write(struct file *file,
 	count -= copy_from_user(p, pbuf, c);
 	ConvSize += c;
 
-	for (n = 0; n < c; n++)
-		p[n] = toupper(p[n]);
+	for (n = 0; n < c; n++) {
+		ch = toupper(p[n]);
+		ConvStat.TotalChars++;
+		if (p[n] != ch) {
+			p[n] = ch;
+			ConvStat.CharsConverted++;
+		}
+	}
 
 	ConvPos = ConvSize;
 	pr_info("omod5 write request %lu bytes, Stored: %u, In Buff: %u\n",
@@ -129,6 +145,7 @@ static int procfs_open(struct inode *in, struct file *f)
 		(f->f_mode & FMODE_WRITE) ? "WRITE" :
 			(f->f_mode & FMODE_READ) ? "READ" : "?");
 	if (f->f_mode & FMODE_WRITE) {
+		ConvStat.TotalCalls++;
 		if (f->f_flags & O_APPEND) {
 			ConvPos = ConvSize;
 		} else {
@@ -149,24 +166,66 @@ static const struct file_operations omod5_fops_rw = {
 };
 
 
+static ssize_t procfs_stat_read(struct file *file,
+			char __user *pbuf,
+			size_t count,
+			loff_t *ppos)
+{
+	static char TmpBuff[PAGE_SIZE];
+	unsigned int N;
+
+	if (memcmp(TmpBuff, "omod5", 5) == 0) {
+		TmpBuff[0] = 0;
+		return 0;
+	}
+
+	sprintf(TmpBuff, "omod5 ToUpper statistics:\n"
+			"Total Calls: %u\n"
+			"Total chars processed: %u\n"
+			"Total chars converted to uppercase: %u\n",
+			ConvStat.TotalCalls,
+			ConvStat.TotalChars,
+			ConvStat.CharsConverted);
+	N = strlen(TmpBuff);
+	copy_to_user(pbuf, TmpBuff, N);
+	pr_info("omod5 stat read %lu bytes, result: %u\n", count, N);
+	return N;
+}
+
+static const struct file_operations omod5_fops_stat = {
+	.owner = THIS_MODULE,
+	.read = procfs_stat_read,
+};
+
 static int __init omod_init(void)
 {
-	pr_info("omod5 ProcFS ToUpper v1 startup...\n");
+	pr_info("omod5 ProcFS ToUpper v2 startup...\n");
 	procfs_dir = proc_mkdir(PROCFS_DIR_NAME, NULL);
 	if (procfs_dir == NULL) {
 		pr_err("omod5: error creating proc-fs dir \'"
 			PROCFS_DIR_NAME "\'\n");
 		return -EEXIST;
 	}
-	procfs_ent_rw = proc_create(PROCFS_RW_NAME, 0666, procfs_dir, &omod5_fops_rw);
+
+	procfs_ent_rw = proc_create(PROCFS_RW_NAME,
+			0666, procfs_dir, &omod5_fops_rw);
 	if (procfs_ent_rw == NULL) {
 		pr_err("omod5: error creating proc-fs entry \'" PROCFS_DIR_NAME
 			"\\" PROCFS_RW_NAME "\'\n");
 		remove_proc_entry(PROCFS_DIR_NAME, NULL);
-		return -EEXIST;
+		return -ENOMEM;
 	}
-	pr_info("omod5 ProcFS ToUpper module loaded\n");
 
+	procfs_ent_stat = proc_create(PROCFS_STAT_NAME,
+			0666, procfs_dir, &omod5_fops_stat);
+	if (procfs_ent_stat == NULL) {
+		pr_err("omod5: error creating proc-fs entry \'" PROCFS_DIR_NAME
+			"\\" PROCFS_STAT_NAME "\'\n");
+		proc_remove(procfs_dir);
+		return -ENOMEM;
+	}
+
+	pr_info("omod5 ProcFS ToUpper module loaded\n");
 	return 0;
 }
 
@@ -182,5 +241,5 @@ module_exit(omod_exit);
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Oleg Khokhlov");
 MODULE_DESCRIPTION("OlegH Lesson05 module: test proc_fs");
-MODULE_VERSION("0.1");
+MODULE_VERSION("0.2");
 

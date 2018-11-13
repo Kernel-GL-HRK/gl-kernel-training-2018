@@ -3,7 +3,7 @@
  * Copyright (C) 2018
  * Author: Oleg Khokhlov <oleg.khokhlov.ua@gmail.com>
  *
- * SysFS kernel module for CAPITALIZE text files
+ * SysFS kernel module for LowerCase text files
  *
  * doc links:
  *   https://www.kernel.org/doc/Documentation/filesystems/sysfs.txt
@@ -20,6 +20,10 @@
 // 2. Create a simple string lowercase converter using sysfs
 // (store: input string, show: that string in lowercase).
 
+// 3. Add read only attributes for both filesystems showing statistics
+// (using cat): e.g. total calls, total characters processed,
+// characters converted etc).
+
 // --------------- MODULE PARAMETERS DESCRIPTION -------------------
 //int iParam;
 //module_param(iParam, int, 0);
@@ -34,6 +38,12 @@
 char ConvBuff[PAGE_SIZE+1];
 
 static struct class *attr_class;
+
+struct ConvStat {
+	unsigned int TotalCalls;
+	unsigned int TotalChars;
+	unsigned int CharsConverted;
+} ConvStat;
 
 #define SysFS_DIR_NAME   "omod5"
 #define SysFS_RW_NAME    "tolower"
@@ -59,6 +69,7 @@ static ssize_t tolower_store(struct class *cl,
 {
 	size_t s;
 	int n;
+	char ch;
 
 	s = count;
 	if (s >= sizeof(ConvBuff))
@@ -67,8 +78,17 @@ static ssize_t tolower_store(struct class *cl,
 	memcpy(ConvBuff, buf, s);
 	ConvBuff[s] = 0;
 
-	for (n = 0; n < s; n++)
-		ConvBuff[n] = tolower(ConvBuff[n]);
+	//for (n = 0; n < s; n++)
+	//	ConvBuff[n] = tolower(ConvBuff[n]);
+	for (n = 0; n < s; n++) {
+		ch = tolower(ConvBuff[n]);
+		ConvStat.TotalChars++;
+		if (ConvBuff[n] != ch) {
+			ConvBuff[n] = ch;
+			ConvStat.CharsConverted++;
+		}
+	}
+	ConvStat.TotalCalls++;
 
 	pr_info("omod5 store %lu bytes\n", count);
 
@@ -82,11 +102,38 @@ static struct class_attribute class_attr_tolower = {
 	.store = tolower_store
 };
 
+
+static ssize_t stat_show(struct class *cl,
+			struct class_attribute *attr,
+			char *buf)
+{
+	unsigned int L;
+
+	sprintf(buf, "omod5 ToUpper statistics:\n"
+			"Total Calls: %u\n"
+			"Total chars processed: %u\n"
+			"Total chars converted to uppercase: %u\n",
+			ConvStat.TotalCalls,
+			ConvStat.TotalChars,
+			ConvStat.CharsConverted);
+
+	L = strlen(buf);
+
+	pr_info("omod5 stat show (L=%d)\n", L);
+	return L;
+}
+
+static struct class_attribute class_attr_stat = {
+	.attr = { .name = SysFS_STAT_NAME, .mode = 0444 },
+	.show = stat_show,
+};
+
+
 static int __init omod_init(void)
 {
 	int ret;
 
-	pr_info("omod5 SysFS ToLower v1 startup...\n");
+	pr_info("omod5 SysFS ToLower v2 startup...\n");
 
 	attr_class = class_create(THIS_MODULE, SysFS_DIR_NAME);
 	if (attr_class == NULL) {
@@ -96,7 +143,15 @@ static int __init omod_init(void)
 
 	ret = class_create_file(attr_class, &class_attr_tolower);
 	if (ret) {
-		pr_err("omod5: error creating sysfs class attributen");
+		pr_err("omod5: error creating sysfs class attribute\n");
+		class_destroy(attr_class);
+		return ret;
+	}
+
+	ret = class_create_file(attr_class, &class_attr_stat);
+	if (ret) {
+		pr_err("omod5: error creating sysfs class stat attribute\n");
+		class_remove_file(attr_class, &class_attr_tolower);
 		class_destroy(attr_class);
 		return ret;
 	}
@@ -107,6 +162,7 @@ static int __init omod_init(void)
 
 static void __exit omod_exit(void)
 {
+	class_remove_file(attr_class, &class_attr_stat);
 	class_remove_file(attr_class, &class_attr_tolower);
 	class_destroy(attr_class);
 
@@ -119,5 +175,5 @@ module_exit(omod_exit);
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Oleg Khokhlov");
 MODULE_DESCRIPTION("OlegH Lesson05 module: test sys_fs");
-MODULE_VERSION("0.1");
+MODULE_VERSION("0.2");
 
