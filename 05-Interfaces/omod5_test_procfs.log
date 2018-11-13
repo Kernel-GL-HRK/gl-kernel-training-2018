@@ -1,0 +1,113 @@
+bash$ 
+bash$ sudo dmesg -C
+bash$ sudo insmod omod5_test_procfs.ko
+bash$ dmesg
+[87738.227627] omod5 ProcFS ToUpper v1 startup...
+[87738.227634] omod5 ProcFS ToUpper module loaded
+bash$ cp cpufreq.c /proc/omod5/toupper 
+cp: ошибка записи '/proc/omod5/toupper': На устройстве не осталось свободного места
+bash$ dmesg
+[87738.227627] omod5 ProcFS ToUpper v1 startup...
+[87738.227634] omod5 ProcFS ToUpper module loaded
+[87750.306111] omod5 open. mode: 1801E (WRITE)
+[87750.306388] omod5 write request 68285 bytes, Stored: 65536, In Buff: 65536
+[87750.306395] omod5 write request 2749 bytes, Stored: 0, In Buff: 65536
+bash$ ls -l /proc/omod5/toupper 
+-rw-rw-rw- 1 root root 0 ноя 11 09:27 /proc/omod5/toupper
+bash$ dmesg
+[87738.227627] omod5 ProcFS ToUpper v1 startup...
+[87738.227634] omod5 ProcFS ToUpper module loaded
+[87750.306111] omod5 open. mode: 1801E (WRITE)
+[87750.306388] omod5 write request 68285 bytes, Stored: 65536, In Buff: 65536
+[87750.306395] omod5 write request 2749 bytes, Stored: 0, In Buff: 65536
+bash$ tail /proc/omod5/toupper 
+    CPUS_READ_LOCK();
+
+    WRITE_LOCK_IRQSAVE(&CPUFREQ_DRIVER_LOCK, FLAGS);
+    IF (CPUFREQ_DRIVER) {
+	WRITE_UNLOCK_IRQRESTORE(&CPUFREQ_DRIVER_LOCK, FLAGS);
+	RET = -EEXIST;
+	GOTO OUT;
+    }
+    CPUFREQ_DRIVER = DRIVER_DATA;
+    WRITE_UNLOCK_IRQRESTORE(&CPUFREQ_DRIVER_LObash$ 
+bash$ dmesg
+[87738.227627] omod5 ProcFS ToUpper v1 startup...
+[87738.227634] omod5 ProcFS ToUpper module loaded
+[87750.306111] omod5 open. mode: 1801E (WRITE)
+[87750.306388] omod5 write request 68285 bytes, Stored: 65536, In Buff: 65536
+[87750.306395] omod5 write request 2749 bytes, Stored: 0, In Buff: 65536
+[87812.101971] omod5 open. mode: 801D (READ)
+[87812.101989] omod5 seek 0, 1, Result:0
+[87812.102008] omod5 seek 57344, 0, Result:57344
+[87812.102026] omod5 read 8192 bytes, result: 8192
+[87812.102237] omod5 read 0 bytes, result: 0
+bash$ cp omod5_test_procfs.c /proc/omod5/toupper 
+bash$ dmesg
+[87738.227627] omod5 ProcFS ToUpper v1 startup...
+[87738.227634] omod5 ProcFS ToUpper module loaded
+[87750.306111] omod5 open. mode: 1801E (WRITE)
+[87750.306388] omod5 write request 68285 bytes, Stored: 65536, In Buff: 65536
+[87750.306395] omod5 write request 2749 bytes, Stored: 0, In Buff: 65536
+[87812.101971] omod5 open. mode: 801D (READ)
+[87812.101989] omod5 seek 0, 1, Result:0
+[87812.102008] omod5 seek 57344, 0, Result:57344
+[87812.102026] omod5 read 8192 bytes, result: 8192
+[87812.102237] omod5 read 0 bytes, result: 0
+[87872.093432] omod5 open. mode: 1801E (WRITE)
+[87872.093506] omod5 write request 4371 bytes, Stored: 4371, In Buff: 4371
+bash$ cat README.md >> /proc/omod5/toupper 
+bash$ tail /proc/omod5/toupper 
+MODULE_DESCRIPTION("OLEGH LESSON05 MODULE: TEST PROC_FS");
+MODULE_VERSION("0.1");
+
+# HOMEWORK:
+
+PROCFS AND SYSFS KERNEL MODULE INTERFACES:
+
+1. CREATE A SIMPLE STRING UPPERCASE CONVERTER USING PROCFS (WRITE: INPUT STRING, READ: THAT STRING IN UPPERCASE).
+2. CREATE A SIMPLE STRING LOWERCASE CONVERTER USING SYSFS (STORE: INPUT STRING, SHOW: THAT STRING IN LOWERCASE).
+3. ADD READ ONLY ATTRIBUTES FOR BOTH FILESYSTEMS SHOWING STATISTICS (USING CAT): E.G. TOTAL CALLS, TOTAL CHARACTERS PROCESSED, CHARACTERS CONVERTED ETC).
+bash$ dmesg
+[87738.227627] omod5 ProcFS ToUpper v1 startup...
+[87738.227634] omod5 ProcFS ToUpper module loaded
+[87750.306111] omod5 open. mode: 1801E (WRITE)
+[87750.306388] omod5 write request 68285 bytes, Stored: 65536, In Buff: 65536
+[87750.306395] omod5 write request 2749 bytes, Stored: 0, In Buff: 65536
+[87812.101971] omod5 open. mode: 801D (READ)
+[87812.101989] omod5 seek 0, 1, Result:0
+[87812.102008] omod5 seek 57344, 0, Result:57344
+[87812.102026] omod5 read 8192 bytes, result: 8192
+[87812.102237] omod5 read 0 bytes, result: 0
+[87872.093432] omod5 open. mode: 1801E (WRITE)
+[87872.093506] omod5 write request 4371 bytes, Stored: 4371, In Buff: 4371
+[87926.022501] omod5 open. mode: 1801E (WRITE)
+[87926.024678] omod5 write request 438 bytes, Stored: 438, In Buff: 4809
+[87948.787646] omod5 open. mode: 801D (READ)
+[87948.787667] omod5 seek 0, 1, Result:0
+[87948.787688] omod5 seek 0, 0, Result:0
+[87948.787708] omod5 read 4809 bytes, result: 4809
+[87948.788092] omod5 read 0 bytes, result: 0
+bash$ sudo rmmod omod5_test_procfs 
+bash$ dmesg
+[87738.227627] omod5 ProcFS ToUpper v1 startup...
+[87738.227634] omod5 ProcFS ToUpper module loaded
+[87750.306111] omod5 open. mode: 1801E (WRITE)
+[87750.306388] omod5 write request 68285 bytes, Stored: 65536, In Buff: 65536
+[87750.306395] omod5 write request 2749 bytes, Stored: 0, In Buff: 65536
+[87812.101971] omod5 open. mode: 801D (READ)
+[87812.101989] omod5 seek 0, 1, Result:0
+[87812.102008] omod5 seek 57344, 0, Result:57344
+[87812.102026] omod5 read 8192 bytes, result: 8192
+[87812.102237] omod5 read 0 bytes, result: 0
+[87872.093432] omod5 open. mode: 1801E (WRITE)
+[87872.093506] omod5 write request 4371 bytes, Stored: 4371, In Buff: 4371
+[87926.022501] omod5 open. mode: 1801E (WRITE)
+[87926.024678] omod5 write request 438 bytes, Stored: 438, In Buff: 4809
+[87948.787646] omod5 open. mode: 801D (READ)
+[87948.787667] omod5 seek 0, 1, Result:0
+[87948.787688] omod5 seek 0, 0, Result:0
+[87948.787708] omod5 read 4809 bytes, result: 4809
+[87948.788092] omod5 read 0 bytes, result: 0
+[87982.691426] omod5 ProcFS ToUpper normal shutdown.
+bash$ 
