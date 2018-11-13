@@ -6,11 +6,13 @@
 #include <linux/device.h>
 #include <linux/kernel.h>
 #include <linux/time.h>
+#include <linux/timer.h>
 
 static struct timespec last_read;
 
 static unsigned long log_period_ms = 5000;
 
+static struct timer_list log_timer;
 
 static ssize_t log_period_store(struct class *class,
 		struct class_attribute *attr, const char *buf, size_t count)
@@ -65,6 +67,12 @@ static CLASS_ATTR_RO(prev_read_info);
 
 static struct class *time_demo_class;
 
+void log_tick(unsigned long data)
+{
+	pr_info("tick...\n");
+	mod_timer(&log_timer, jiffies + msecs_to_jiffies(log_period_ms));
+}
+
 static int tm_init(void)
 {
 	int ret;
@@ -92,6 +100,10 @@ static int tm_init(void)
 		return ret;
 	}
 
+	init_timer(&log_timer);
+	setup_timer(&log_timer, log_tick, 0);
+	mod_timer(&log_timer, jiffies + msecs_to_jiffies(log_period_ms));
+
 	return 0;
 }
 
@@ -100,7 +112,9 @@ static void tm_exit(void)
 	class_remove_file(time_demo_class, &class_attr_log_period);
 	class_remove_file(time_demo_class, &class_attr_prev_read_info);
 	class_destroy(time_demo_class);
+	del_timer(&log_timer);
 }
+
 
 module_init(tm_init);
 module_exit(tm_exit);
