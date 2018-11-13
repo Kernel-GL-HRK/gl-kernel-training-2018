@@ -1,0 +1,50 @@
+vls@asus:~/projects/training/linux/task05_procfs$ sudo insmod myprocfs.ko
+vls@asus:~/projects/training/linux/task05_procfs$ su -c 'echo 123qwertyuiopasdfghjkl\;zxcvbnm\,\.1234567890\-роророіфшйуцшзвоавйцсошйщпшрє= > /proc/myprocfs'
+Пароль: 
+vls@asus:~/projects/training/linux/task05_procfs$ cat /proc/myprocfs 
+123QWERTYUIOPASDFGHJKL;ZXCVBNM,.1234567890-роророіфшйуцшзвоавйцсошйщпшрє=
+vls@asus:~/projects/training/linux/task05_procfs$ su -c "echo AaZz12\,\. > /proc/myprocfs"
+Пароль: 
+vls@asus:~/projects/training/linux/task05_procfs$ sudo dmesg
+[ 8688.150748] myprocfs: module loaded
+[ 8709.893514] myprocfs: mywrite: count=103
+[ 8709.893517] myprocfs: mywrite: not_copied=0
+[ 8709.893517] myprocfs: mywrite: msg_size=103
+[ 8721.739273] myprocfs: myread: count=131072
+[ 8721.739275] myprocfs: myread: msg_size=103
+[ 8721.739280] myprocfs: myread: not_copied=0
+[ 8721.739280] myprocfs: myread: return=103
+[ 8721.739376] myprocfs: myread: count=131072
+[ 8721.739377] myprocfs: myread: msg_size=0
+[ 8721.739377] myprocfs: myread: return=0
+[ 8814.203905] myprocfs: mywrite: count=9
+[ 8814.203931] myprocfs: mywrite: not_copied=0
+[ 8814.203933] myprocfs: mywrite: msg_size=9
+vls@asus:~/projects/training/linux/task05_procfs$ cat /proc/myprocfs 
+AAZZ12,.
+vls@asus:~/projects/training/linux/task05_procfs$ sudo rmmod myprocfs
+vls@asus:~/projects/training/linux/task05_procfs$ sudo dmesg
+vls@asus:~/projects/training/linux/task05_procfs$ 
+[ 8688.150748] myprocfs: module loaded
+[ 8709.893514] myprocfs: mywrite: count=103
+[ 8709.893517] myprocfs: mywrite: not_copied=0
+[ 8709.893517] myprocfs: mywrite: msg_size=103
+[ 8721.739273] myprocfs: myread: count=131072
+[ 8721.739275] myprocfs: myread: msg_size=103
+[ 8721.739280] myprocfs: myread: not_copied=0
+[ 8721.739280] myprocfs: myread: return=103
+[ 8721.739376] myprocfs: myread: count=131072
+[ 8721.739377] myprocfs: myread: msg_size=0
+[ 8721.739377] myprocfs: myread: return=0
+[ 8814.203905] myprocfs: mywrite: count=9
+[ 8814.203931] myprocfs: mywrite: not_copied=0
+[ 8814.203933] myprocfs: mywrite: msg_size=9
+[ 8852.479603] myprocfs: myread: count=131072
+[ 8852.479605] myprocfs: myread: msg_size=9
+[ 8852.479609] myprocfs: myread: not_copied=0
+[ 8852.479610] myprocfs: myread: return=9
+[ 8852.479697] myprocfs: myread: count=131072
+[ 8852.479698] myprocfs: myread: msg_size=0
+[ 8852.479698] myprocfs: myread: return=0
+[ 8936.121050] myprocfs: module exited
+
