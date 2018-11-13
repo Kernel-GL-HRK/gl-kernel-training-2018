@@ -1,0 +1,22 @@
+bash$ ./chkpatch.sh omod5_test_procfs.c
+WARNING: braces {} are not necessary for any arm of this statement
+#132: FILE: /home/olegh/gl-kernel-training-2018/05-Interfaces/omod5_test_procfs.c:132:
++		if (f->f_flags & O_APPEND) {
+[...]
++		} else {
+[...]
+
+WARNING: line over 80 characters
+#161: FILE: /home/olegh/gl-kernel-training-2018/05-Interfaces/omod5_test_procfs.c:161:
++	procfs_ent_rw = proc_create(PROCFS_RW_NAME, 0666, procfs_dir, &omod5_fops_rw);
+
+total: 0 errors, 2 warnings, 186 lines checked
+
+NOTE: For some of the reported defects, checkpatch may be able to
+      mechanically convert to the typical style using --fix or --fix-inplace.
+
+/home/olegh/gl-kernel-training-2018/05-Interfaces/omod5_test_procfs.c has style problems, please review.
+
+NOTE: If any of the errors are false positives, please report
+      them to the maintainer, see CHECKPATCH in MAINTAINERS.
+bash$ 
