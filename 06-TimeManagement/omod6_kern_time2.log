@@ -1,0 +1,35 @@
+bash$ 
+bash$ 
+bash$ sudo insmod omod6_kern_time.ko
+bash$ cat /sys/class/omod6/ktime 
+ktime (50320923 ticks, 250 HZ):
+1 module call
+4 sec from last call
+1542138138 sec curr abs time from Epoch (2018.11.13, 19:42:18)
+1542138134 sec prev call abs time from Epoch
+0 ms - Timer Interval
+0 times timer called
+bash$ 
+bash$ 
+bash$ echo "2000 Hello from module timer!" > /sys/class/omod6/ktime
+bash$ 
+bash$ cat /sys/class/omod6/ktime 
+ktime (50325075 ticks, 250 HZ):
+2 module call
+17 sec from last call
+1542138155 sec curr abs time from Epoch (2018.11.13, 19:42:35)
+1542138138 sec prev call abs time from Epoch
+2000 ms - Timer Interval
+1 times timer called
+bash$ 
+bash$ 
+bash$ dmesg
+[201578.642960] omod6 Kernel time function test module started.
+[201593.096793] omod6 store (2000, 'Hello from module timer!')
+[201593.096800] omod6 Timer started (interval=2000)
+[201595.113490] omod6 timer[1]: Hello from module timer! (delay = 2020 ms)
+bash$ 
+bash$ 
+bash$ sudo rmmod omod6_kern_time
+bash$ 
+bash$ 

@@ -23,6 +23,8 @@
 #include <linux/rtc.h>
 #include <linux/delay.h>
 
+
+
 //Internal Kernel API (Time Management):
 
 //1. Implement kernel module with API in sysfs or procfs, which is able to:
@@ -54,7 +56,7 @@ uint32_t TimerInterval;
 uint32_t TimerCounter;
 uint32_t TimerStartTick;
 
-char LogMessage[PAGE_SIZE];
+char LogMessage[256];
 
 uint32_t GetTimeStamp(void)
 {
@@ -74,8 +76,8 @@ static ssize_t ktime_show(struct class *cl,
 			char *buf)
 {
 	int L;
-
 	uint32_t TS, dT, T;
+	struct rtc_time tm;
 
 	T = GetTickCount();
 	TS = GetTimeStamp();
@@ -93,7 +95,10 @@ static ssize_t ktime_show(struct class *cl,
 	sprintf(buf, "ktime (%u ticks, %u HZ):\n", (uint32_t)get_jiffies_64(), HZ);
 	sprintf(strchr(buf, 0), "%u module call\n", ModCallCount);
 	sprintf(strchr(buf, 0), "%u sec from last call\n", dT);
-	sprintf(strchr(buf, 0), "%u sec curr abs time from Epoch (year:%d)\n", TS, 1970+TS/(3600*24*365));
+	rtc_time64_to_tm(TS, &tm);
+	//https://ru.wikipedia.org/wiki/Time.h
+	sprintf(strchr(buf, 0), "%u sec curr abs time from Epoch (%d.%02d.%02d, %02d:%02d:%02d)\n", TS,
+		tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
 	sprintf(strchr(buf, 0), "%u sec prev call abs time from Epoch\n", LastCallTimeSec);
 	sprintf(strchr(buf, 0), "%u ms - Timer Interval\n", TimerInterval);
 	sprintf(strchr(buf, 0), "%u times timer called\n", TimerCounter);
@@ -117,8 +122,7 @@ void KernelTimerFunc(struct timer_list *t)
 	TimerCounter++;
 	T = GetTickCount();
 	dT = T - TimerStartTick;
-	pr_info("omod6 timer[%u]: %s (delay = %u ms)\n",
-		TimerCounter, LogMessage, dT);
+	pr_info("omod6 timer[%u]: %s (delay = %u ms)\n", TimerCounter, LogMessage, dT);
 }
 
 
@@ -127,30 +131,38 @@ static ssize_t ktime_store(struct class *cl,
 			const char *buf, size_t count)
 {
 	int interval = 0;
+	char *cp;
 	int n;
 
-	n = sscanf(buf, "%d %s", &interval, LogMessage);
-	pr_info("omod6 store (%d, \'%s\')\n", interval, LogMessage);
-	if (n >= 1) {
-		TimerInterval = interval;
-		// start, stop or reconfig timer
-		if (interval == 0) {
-			if (timer_pending(&MyTimer)) {
-				del_timer(&MyTimer);
-				pr_info("omod6 Timer disabled\n");
+	if (sscanf(buf, "%d", &interval) == 1) {
+		cp = strchr(buf, ' ');
+		if (cp) {
+			while (*cp == ' ')
+				cp++;
+			for (n = 0; n < sizeof(LogMessage) - 1; n++) {
+				if (*cp < ' ')
+					break;
+				LogMessage[n] = *cp++;
 			}
-		} else {
-			unsigned long expired = get_jiffies_64() +
-				interval * HZ / 1000;
-			//if (timer_pending(&MyTimer)) {
-			//	mod_timer_pending(&MyTimer, expired);
-			//} else {
-			mod_timer(&MyTimer, expired);
-			//	add_timer(&MyTimer);
-			//}
-			TimerStartTick = GetTickCount();
-			pr_info("omod6 Timer started (interval=%u)\n", interval);
+			LogMessage[n] = 0;
 		}
+	}
+
+	pr_info("omod6 store (%d, \'%s\')\n", interval, LogMessage);
+
+	TimerInterval = interval;
+
+	// start, stop or reconfig timer
+	if (interval == 0) {
+		if (timer_pending(&MyTimer)) {
+			del_timer(&MyTimer);
+			pr_info("omod6 Timer disabled\n");
+		}
+	} else {
+		unsigned long expired = get_jiffies_64() + interval * HZ / 1000;
+		mod_timer(&MyTimer, expired);
+		TimerStartTick = GetTickCount();
+		pr_info("omod6 Timer started (interval=%u)\n", interval);
 	}
 	return count;
 }
@@ -200,5 +212,5 @@ module_exit(omod_exit);
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Oleg Khokhlov");
 MODULE_DESCRIPTION("OlegH Lesson06 module: test kernel time funcs");
-MODULE_VERSION("0.1");
+MODULE_VERSION("0.2");
 

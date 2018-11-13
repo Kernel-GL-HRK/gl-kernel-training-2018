@@ -1,0 +1,30 @@
+bash$ 
+bash$ ./chkpatch.sh omod6_kern_time.c
+WARNING: Prefer kstrto<type> to single variable sscanf
+#138: FILE: /home/olegh/gl-kernel-training-2018/06-TimeManagement/omod6_kern_time.c:138:
++	if (sscanf(buf, "%d", &interval) == 1) {
++		cp = strchr(buf, ' ');
++		if (cp) {
++			while (*cp == ' ')
++				cp++;
++			for (n = 0; n < sizeof(LogMessage) - 1; n++) {
++				if (*cp < ' ')
++					break;
++				LogMessage[n] = *cp++;
++			}
++			LogMessage[n] = 0;
++		}
++	}
+
+total: 0 errors, 1 warnings, 222 lines checked
+
+NOTE: For some of the reported defects, checkpatch may be able to
+      mechanically convert to the typical style using --fix or --fix-inplace.
+
+/home/olegh/gl-kernel-training-2018/06-TimeManagement/omod6_kern_time.c has style problems, please review.
+
+NOTE: Ignored message types: LONG_LINE LONG_LINE_COMMENT LONG_LINE_STRING
+
+NOTE: If any of the errors are false positives, please report
+      them to the maintainer, see CHECKPATCH in MAINTAINERS.
+bash$ 
