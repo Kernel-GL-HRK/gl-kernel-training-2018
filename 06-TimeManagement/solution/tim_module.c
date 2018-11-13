@@ -5,7 +5,9 @@
 #include <linux/jiffies.h>
 #include <linux/device.h>
 #include <linux/kernel.h>
+#include <linux/time.h>
 
+static struct timespec last_read;
 
 static unsigned long log_period_ms = 5000;
 
@@ -42,7 +44,20 @@ static CLASS_ATTR_RW(log_period);
 static ssize_t prev_read_info_show(struct class *class,
 		struct class_attribute *attr, char *buf)
 {
-	sprintf(buf, "Not implemented\n");
+	struct timespec curr_time = current_kernel_time();
+
+	struct tm hr_time;
+
+	time_to_tm(last_read.tv_sec, (-60) * sys_tz.tz_minuteswest, &hr_time);
+
+	sprintf(buf, "Previous read time: (%04d-%02d-%02d %02d:%02d:%02d)\n"
+		"Time since last read: %lu s\n",
+		hr_time.tm_year + 1900, hr_time.tm_mon + 1,
+		hr_time.tm_mday, hr_time.tm_hour, hr_time.tm_min,
+		hr_time.tm_sec, curr_time.tv_sec - last_read.tv_sec);
+
+	last_read = curr_time;
+
 	return strlen(buf);
 }
 
@@ -53,6 +68,8 @@ static struct class *time_demo_class;
 static int tm_init(void)
 {
 	int ret;
+
+	last_read = current_kernel_time();
 
 	time_demo_class = class_create(THIS_MODULE, "time_demo");
 	if (time_demo_class == NULL) {
