@@ -1,8 +1,8 @@
 #
-# Homework 5: Building module_procfs
+# Homework 5: Building module_procfs and module_sysfs
 #
 
-obj-m :=module_procfs.o
+obj-m :=module_procfs.o module_sysfs.o
 
 all:
 	make -C $(BUILD_KERNEL) M=$(PWD) modules
