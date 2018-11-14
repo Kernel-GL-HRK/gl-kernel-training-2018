@@ -1,50 +1,108 @@
-vls@asus:~/projects/training/linux/task05_procfs$ sudo insmod myprocfs.ko
-vls@asus:~/projects/training/linux/task05_procfs$ su -c 'echo 123qwertyuiopasdfghjkl\;zxcvbnm\,\.1234567890\-роророіфшйуцшзвоавйцсошйщпшрє= > /proc/myprocfs'
+student@net01:~/projects/training/linux/task05_procfs$ insmod myprocfs.ko 
+student@net01:~/projects/training/linux/task05_procfs$ su -c  'echo asd1234rqwetrsnmsafhkhfjerhfrekfdnfwhjkerutie3ljf > /proc/myprocfs/convertor'
 Пароль: 
-vls@asus:~/projects/training/linux/task05_procfs$ cat /proc/myprocfs 
-123QWERTYUIOPASDFGHJKL;ZXCVBNM,.1234567890-роророіфшйуцшзвоавйцсошйщпшрє=
-vls@asus:~/projects/training/linux/task05_procfs$ su -c "echo AaZz12\,\. > /proc/myprocfs"
+student@net01:~/projects/training/linux/task05_procfs$ su -c  'echo asd1234rqwetrsnmsafhkhfjerhfrekfdnfwhjkerutie3ljf > /proc/myprocfs/convertor'
 Пароль: 
-vls@asus:~/projects/training/linux/task05_procfs$ sudo dmesg
-[ 8688.150748] myprocfs: module loaded
-[ 8709.893514] myprocfs: mywrite: count=103
-[ 8709.893517] myprocfs: mywrite: not_copied=0
-[ 8709.893517] myprocfs: mywrite: msg_size=103
-[ 8721.739273] myprocfs: myread: count=131072
-[ 8721.739275] myprocfs: myread: msg_size=103
-[ 8721.739280] myprocfs: myread: not_copied=0
-[ 8721.739280] myprocfs: myread: return=103
-[ 8721.739376] myprocfs: myread: count=131072
-[ 8721.739377] myprocfs: myread: msg_size=0
-[ 8721.739377] myprocfs: myread: return=0
-[ 8814.203905] myprocfs: mywrite: count=9
-[ 8814.203931] myprocfs: mywrite: not_copied=0
-[ 8814.203933] myprocfs: mywrite: msg_size=9
-vls@asus:~/projects/training/linux/task05_procfs$ cat /proc/myprocfs 
-AAZZ12,.
-vls@asus:~/projects/training/linux/task05_procfs$ sudo rmmod myprocfs
-vls@asus:~/projects/training/linux/task05_procfs$ sudo dmesg
-vls@asus:~/projects/training/linux/task05_procfs$ 
-[ 8688.150748] myprocfs: module loaded
-[ 8709.893514] myprocfs: mywrite: count=103
-[ 8709.893517] myprocfs: mywrite: not_copied=0
-[ 8709.893517] myprocfs: mywrite: msg_size=103
-[ 8721.739273] myprocfs: myread: count=131072
-[ 8721.739275] myprocfs: myread: msg_size=103
-[ 8721.739280] myprocfs: myread: not_copied=0
-[ 8721.739280] myprocfs: myread: return=103
-[ 8721.739376] myprocfs: myread: count=131072
-[ 8721.739377] myprocfs: myread: msg_size=0
-[ 8721.739377] myprocfs: myread: return=0
-[ 8814.203905] myprocfs: mywrite: count=9
-[ 8814.203931] myprocfs: mywrite: not_copied=0
-[ 8814.203933] myprocfs: mywrite: msg_size=9
-[ 8852.479603] myprocfs: myread: count=131072
-[ 8852.479605] myprocfs: myread: msg_size=9
-[ 8852.479609] myprocfs: myread: not_copied=0
-[ 8852.479610] myprocfs: myread: return=9
-[ 8852.479697] myprocfs: myread: count=131072
-[ 8852.479698] myprocfs: myread: msg_size=0
-[ 8852.479698] myprocfs: myread: return=0
-[ 8936.121050] myprocfs: module exited
-
+student@net01:~/projects/training/linux/task05_procfs$ su -c  'echo asd1234 > /proc/myprocfs/convertor'
+Пароль: 
+student@net01:~/projects/training/linux/task05_procfs$ su -c  'echo asd1234фівіва > /proc/myprocfs/convertor'
+Пароль: 
+student@net01:~/projects/training/linux/task05_procfs$ cat /proc/myprocfs/convertor 
+ASD1234фівіва
+student@net01:~/projects/training/linux/task05_procfs$ cat /proc/myprocfs/stat 
+Converter statistics:
+Called: 6
+Write: 4
+Read : 2
+Copied: 148
+Not copied: 0
+Converted: 94
+student@net01:~/projects/training/linux/task05_procfs$ su -c  'echo asd1234фівіва > /proc/myprocfs/convertor'
+Пароль: 
+student@net01:~/projects/training/linux/task05_procfs$ cat /proc/myprocfs/stat 
+Converter statistics:
+Called: 7
+Write: 5
+Read : 2
+Copied: 168
+Not copied: 0
+Converted: 97
+student@net01:~/projects/training/linux/task05_procfs$ dmesg
+[ 5634.558883] myprocfs: module loaded
+[ 5647.860759] myprocfs: mywrite: count=50
+[ 5647.860761] myprocfs: mywrite: not_copied=0
+[ 5647.860762] myprocfs: mywrite: msg_size=50
+[ 5651.175330] myprocfs: mywrite: count=50
+[ 5651.175333] myprocfs: mywrite: not_copied=0
+[ 5651.175334] myprocfs: mywrite: msg_size=50
+[ 5662.637705] myprocfs: mywrite: count=8
+[ 5662.637709] myprocfs: mywrite: not_copied=0
+[ 5662.637710] myprocfs: mywrite: msg_size=8
+[ 5670.504874] myprocfs: mywrite: count=20
+[ 5670.504876] myprocfs: mywrite: not_copied=0
+[ 5670.504877] myprocfs: mywrite: msg_size=20
+[ 5681.916069] myprocfs: myread: count=131072
+[ 5681.916071] myprocfs: myread: msg_size=20
+[ 5681.916075] myprocfs: myread: not_copied=0
+[ 5681.916075] myprocfs: myread: return=20
+[ 5681.916161] myprocfs: myread: count=131072
+[ 5681.916161] myprocfs: myread: msg_size=0
+[ 5681.916162] myprocfs: myread: return=0
+[ 5707.680672] myprocfs: mystat: successful copy data to user.
+[ 5718.051344] myprocfs: mywrite: count=20
+[ 5718.051347] myprocfs: mywrite: not_copied=0
+[ 5718.051347] myprocfs: mywrite: msg_size=20
+student@net01:~/projects/training/linux/task05_procfs$ ^C
+student@net01:~/projects/training/linux/task05_procfs$ cat /proc/myprocfs/stat 
+Converter statistics:
+Called: 7
+Write: 5
+Read : 2
+Copied: 168
+Not copied: 0
+Converted: 97
+student@net01:~/projects/training/linux/task05_procfs$ cat /proc/myprocfs/stat 
+Converter statistics:
+Called: 7
+Write: 5
+Read : 2
+Copied: 168
+Not copied: 0
+Converted: 97
+student@net01:~/projects/training/linux/task05_procfs$ cat /proc/myprocfs/stat 
+Converter statistics:
+Called: 7
+Write: 5
+Read : 2
+Copied: 168
+Not copied: 0
+Converted: 97
+student@net01:~/projects/training/linux/task05_procfs$ dmesg
+[ 5634.558883] myprocfs: module loaded
+[ 5647.860759] myprocfs: mywrite: count=50
+[ 5647.860761] myprocfs: mywrite: not_copied=0
+[ 5647.860762] myprocfs: mywrite: msg_size=50
+[ 5651.175330] myprocfs: mywrite: count=50
+[ 5651.175333] myprocfs: mywrite: not_copied=0
+[ 5651.175334] myprocfs: mywrite: msg_size=50
+[ 5662.637705] myprocfs: mywrite: count=8
+[ 5662.637709] myprocfs: mywrite: not_copied=0
+[ 5662.637710] myprocfs: mywrite: msg_size=8
+[ 5670.504874] myprocfs: mywrite: count=20
+[ 5670.504876] myprocfs: mywrite: not_copied=0
+[ 5670.504877] myprocfs: mywrite: msg_size=20
+[ 5681.916069] myprocfs: myread: count=131072
+[ 5681.916071] myprocfs: myread: msg_size=20
+[ 5681.916075] myprocfs: myread: not_copied=0
+[ 5681.916075] myprocfs: myread: return=20
+[ 5681.916161] myprocfs: myread: count=131072
+[ 5681.916161] myprocfs: myread: msg_size=0
+[ 5681.916162] myprocfs: myread: return=0
+[ 5707.680672] myprocfs: mystat: successful copy data to user.
+[ 5718.051344] myprocfs: mywrite: count=20
+[ 5718.051347] myprocfs: mywrite: not_copied=0
+[ 5718.051347] myprocfs: mywrite: msg_size=20
+[ 5719.548073] myprocfs: mystat: successful copy data to user.
+[ 5758.660062] myprocfs: mystat: successful copy data to user.
+[ 5760.634359] myprocfs: mystat: successful copy data to user.
+[ 5761.227554] myprocfs: mystat: successful copy data to user.
