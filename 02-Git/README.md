@@ -1,3 +1,4 @@
+<<<<<<< 0933f223b846249d0e7aea1b902a5bd899af8818
 <<<<<<< d030160d49866ecd96be1021cb40071d87db32fa
 # Git
 
@@ -5,6 +6,11 @@
 =======
 # Homework:
 >>>>>>> 02-Git: Add homework
+=======
+# Git
+
+## Homework
+>>>>>>> Cleanup: Add topicks to lessons' READMEs
 
 Create a rock-paper-scissors console game
 (rules https://en.wikipedia.org/wiki/Rock%E2%80%93paper%E2%80%93scissors)

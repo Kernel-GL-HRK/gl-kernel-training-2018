@@ -1,3 +1,4 @@
+<<<<<<< 0933f223b846249d0e7aea1b902a5bd899af8818
 <<<<<<< 22bd2a9fd2818021980cd8380c2ed5e9562f3e1f
 # Kernel module
 
@@ -5,6 +6,11 @@
 =======
 # Homework:
 >>>>>>> 04-KernelModule: Add homework task
+=======
+# Kernel module
+
+## Homework
+>>>>>>> Cleanup: Add topicks to lessons' READMEs
 
 Create a simple Kernel module:
 
