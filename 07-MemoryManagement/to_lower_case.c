@@ -113,57 +113,30 @@ CLASS_ATTR_RO(used);
 CLASS_ATTR_RO(alphabetic);
 CLASS_ATTR_RO(numeric);
 
-static struct class *module_class;
+static struct attribute *case_converter_class_attrs[] = {
+	&class_attr_buffer.attr,
+	&class_attr_processed.attr,
+	&class_attr_converted.attr,
+	&class_attr_used.attr,
+	&class_attr_alphabetic.attr,
+	&class_attr_numeric.attr,
+	NULL,
+};
+ATTRIBUTE_GROUPS(case_converter_class);
+
+static struct class module_class = {
+	.name = CLASS_NAME,
+	.owner = THIS_MODULE,
+	.class_groups = case_converter_class_groups,
+};
 
 static int __init mod_init(void)
 {
 	int ret;
 
-	module_class = class_create(THIS_MODULE, CLASS_NAME);
-	if (module_class == NULL) {
-		pr_err("%s: Can't create a class in sysfs\n", MODULE_TAG);
-		goto fail;
-	}
-
-	ret = class_create_file(module_class, &class_attr_buffer);
-	if (ret) {
-		pr_err("%s: Can't create attribute %s in sysfs/%s\n",
-			MODULE_TAG, class_attr_buffer.attr.name, module_class->name);
-		return ret;
-	}
-
-	ret = class_create_file(module_class, &class_attr_processed);
-	if (ret) {
-		pr_err("%s: Can't create attribute %s in sysfs/%s\n",
-			MODULE_TAG, class_attr_processed.attr.name, module_class->name);
-		return ret;
-	}
-
-	ret = class_create_file(module_class, &class_attr_converted);
-	if (ret) {
-		pr_err("%s: Can't create attribute %s in sysfs/%s\n",
-			MODULE_TAG, class_attr_converted.attr.name, module_class->name);
-		return ret;
-	}
-
-	ret = class_create_file(module_class, &class_attr_used);
-	if (ret) {
-		pr_err("%s: Can't create attribute %s in sysfs/%s\n",
-			MODULE_TAG, class_attr_used.attr.name, module_class->name);
-		return ret;
-	}
-
-	ret = class_create_file(module_class, &class_attr_alphabetic);
-	if (ret) {
-		pr_err("%s: Can't create attribute %s in sysfs/%s\n",
-			MODULE_TAG, class_attr_alphabetic.attr.name, module_class->name);
-		return ret;
-	}
-
-	ret = class_create_file(module_class, &class_attr_numeric);
-	if (ret) {
-		pr_err("%s: Can't create attribute %s in sysfs/%s\n",
-			MODULE_TAG, class_attr_numeric.attr.name, module_class->name);
+	ret = class_register(&module_class);
+	if (ret < 0) {
+		pr_err("%s: Can't register a class in sysfs\n", MODULE_TAG);
 		return ret;
 	}
 
@@ -183,7 +156,6 @@ static int __init mod_init(void)
 	return 0;
 
 fail:
-	class_destroy(module_class);
 	kfree(msg_buffer);
 	kfree(statistic);
 	return -ENOMEM;
@@ -191,7 +163,7 @@ fail:
 
 static void __exit mod_exit(void)
 {
-	class_destroy(module_class);
+	class_unregister(&module_class);
 	kfree(msg_buffer);
 	kfree(statistic);
 	pr_info("%s: module unloaded\n", MODULE_TAG);
@@ -202,4 +174,5 @@ module_exit(mod_exit);
 
 MODULE_LICENSE("GPL");
 MODULE_DESCRIPTION("A to-lower-case converter module for sysfs");
+MODULE_VERSION("2.0");
 MODULE_AUTHOR("Aleksandr Androsov <eelleekk@gmail.com>");
