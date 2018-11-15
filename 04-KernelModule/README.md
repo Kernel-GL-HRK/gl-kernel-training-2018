@@ -1,4 +1,6 @@
-# Homework:
+# Kernel module
+
+## Homework
 
 Create a simple Kernel module:
 
