@@ -2,13 +2,120 @@
 
 #init variables
 # TOF: Task Out File
-#TOF=~/bash/task1.out
-TOF=task1.out
-#str=''
+TOF=~/bash/task1.out
+FNUM=1
 
+
+function print_help()
+{
+	#cat << HEREDOC
+	echo "Usage: $0 [-h|--help] [-n|--number NUM] [file]"
+	echo " "
+	echo "Collect and print to file information about hardware, OS and LAN"
+	echo "optional arguments:"
+	echo "  -h, --help		show this help message and exit"
+	echo "  -n, --number NUM 	max number files [2..255]"
+	echo "  file			path output file"
+	#HEREDOC
+}
+
+function print_error()
+{
+	#printf "$1" >&2
+	echo "Wrong parameters!"
+	echo "For more info use help: $0 [-h|--help]"
+}
+
+#detect params
+if [[ $# > 0 ]]; then
+	#check entered params
+	for param in $@
+	do
+		case $param in
+			-h | --help ) print_help; exit 0; ;;
+			-n )
+				if (( $2 > 1 )); then
+					FNUM=$2
+				else
+					printf "2-nd argument is not number or less than 2" >&2;
+					print_error; exit 1;
+				fi;
+				# shift arg's for searching 3-rd arg
+				shift 2;
+				if [[ $1 = "" ]]; then
+					# 3-rd arg is absent
+					break;
+				fi
+				;;
+			* )
+				if [[ -n "$1" ]]; then
+					TOF=$1
+				else
+					printf "3-rd argument is not file or path" >&2;
+					print_error; exit 1;
+				fi
+				break; ;;
+		esac
+	done
+fi
+
+#try to create dir if it not exist
+DIR="$(dirname "$TOF")"
+mkdir --parents $DIR
+if [[ "$?" != "0" ]]; then
+	printf "Error during make directory" >&2
+	print_error; exit 1;
+fi
 
 #prepeare output file
 touch $TOF
+
+#file processing
+if [[ $FNUM > 1 ]]; then
+	#check if target file exist
+	if [[ -e "$TOF" ]]; then
+		#define current date by mask yyyymmdd
+		TODAY=$(date -u +%Y%m%d)
+		#define short file name
+		FILE=$(basename "$TOF")
+		#count number of files with reports
+		FCOUNT=$(ls $DIR | grep "$FILE-........-[0-9]*$" | wc -w)
+		#check if count of report files more than need, for deleting it
+		if (( $FCOUNT >= $FNUM )); then
+			#delete all 'old' files such number more than FNUM
+			while [ $(ls $DIR 2>/dev/null | grep "$FILE-........-[0-9]*$" | wc -w) -gt $FNUM ]; do
+				#take one old file
+				oldfile=$(ls $DIR | grep "$FILE-........-[0-9]*$" | tail -n 1)
+				#find index of one old file
+				ofindex=$(printf "%0${zeros}g" ${oldfile:${#FILE}+10:4})
+				#delete this old file if it index >= FNUM
+				if (( $ofindex >= $FNUM )); then
+					rm -fd "$DIR/$oldfile"
+				fi
+			done
+		fi
+		#mark files such need to rename
+		for markfile in $(ls $DIR 2>/dev/null | grep "$FILE-........-[0-9]*$"); do
+			mv "$DIR/$markfile" "$DIR/_$markfile"
+		done
+		#rename files
+		MFILE="_"$FILE
+		for oldfile in $(ls $DIR 2>/dev/null | grep "$MFILE-........-[0-9]*$"); do
+			#find index of this file
+			ofindex=$(printf "%0${zeros}g" ${oldfile:${#MFILE}+10:4})
+			#increment index
+			newindex=$(printf "%04d" $[$ofindex + 1])
+			if (( $newindex >= $FNUM )); then
+				rm -fd "$DIR/$oldfile"
+			else
+				#rename file
+				mv "$DIR/$oldfile" "$DIR/$FILE-$TODAY-$newindex"
+			fi
+		done
+		#rename 1-st file
+		mv "$DIR/$FILE" "$DIR/$FILE-$TODAY-0000"
+	fi
+fi
 
 #write data to the file
 echo $(date -R) > $TOF
