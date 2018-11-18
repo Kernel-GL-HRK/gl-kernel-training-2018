@@ -1,0 +1,86 @@
+>>>>>>>>>>>>> cmd
+~/projects/training/linux/task_06$ insmod my_time.ko
+~/projects/training/linux/task_06$ cat /sys/class/myTime/info 
+Now: 2018-11-18 17-08-47
+Time in sec from previous read:: 27
+Last read time (absolute): 2018-11-18 17-08-20
+~/projects/training/linux/task_06$ cat /sys/class/myTime/info 
+Now: 2018-11-18 17-08-53
+Time in sec from previous read:: 5
+Last read time (absolute): 2018-11-18 17-08-48
+~/projects/training/linux/task_06$ echo 1 > /sys/class/myTime/set 
+~/projects/training/linux/task_06$ echo 1 > /sys/class/myTime/info
+bash: echo: помилка запису: Помилка введення-виведення
+~/projects/training/linux/task_06$ echo 1.25 > /sys/class/myTime/set 
+~/projects/training/linux/task_06$ dmesg
+~/projects/training/linux/task_06$ echo 6.25 > /sys/class/myTime/set 
+~/projects/training/linux/task_06$ echo "asdfg" > /sys/class/myTime/set 
+~/projects/training/linux/task_06$ echo 2000 > /sys/class/myTime/set 
+~/projects/training/linux/task_06$ rmmod my_time 
+~/projects/training/linux/task_06$ dmesg > dmesg_timer.log 
+>>>>>>>>>>>> dmesg
+[16049.777041] my_time: loaded
+[16055.021400] my_time: call my_timer_callback, delay: 5000 [ms]
+[16060.136940] my_time: call my_timer_callback, delay: 5000 [ms]
+[16065.252663] my_time: call my_timer_callback, delay: 5000 [ms]
+[16070.368201] my_time: call my_timer_callback, delay: 5000 [ms]
+[16075.483406] my_time: call my_timer_callback, delay: 5000 [ms]
+[16077.372713] my_time: call my_show
+[16077.372716] my_time: call my_show 
+[16080.598918] my_time: call my_timer_callback, delay: 5000 [ms]
+[16083.145935] my_time: call my_show
+[16083.145938] my_time: call my_show 
+[16085.715049] my_time: call my_timer_callback, delay: 5000 [ms]
+[16090.839449] my_time: call my_timer_callback, delay: 5000 [ms]
+[16095.945524] my_time: call my_timer_callback, delay: 5000 [ms]
+[16101.061111] my_time: call my_timer_callback, delay: 5000 [ms]
+[16106.176742] my_time: call my_timer_callback, delay: 5000 [ms]
+[16111.292365] my_time: call my_timer_callback, delay: 5000 [ms]
+[16116.407726] my_time: call my_timer_callback, delay: 5000 [ms]
+[16121.523508] my_time: call my_timer_callback, delay: 5000 [ms]
+[16126.639240] my_time: call my_timer_callback, delay: 5000 [ms]
+[16131.754892] my_time: call my_timer_callback, delay: 5000 [ms]
+[16134.670267] my_time: call my_store
+[16134.670271] my_time: call my_store, invalid value of the delay: 1
+[16134.670273] my_time: call my_store, using default: 5000
+[16139.683559] my_time: call my_timer_callback, delay: 5000 [ms]
+[16144.799318] my_time: call my_timer_callback, delay: 5000 [ms]
+[16149.914480] my_time: call my_timer_callback, delay: 5000 [ms]
+[16155.030519] my_time: call my_timer_callback, delay: 5000 [ms]
+[16160.146208] my_time: call my_timer_callback, delay: 5000 [ms]
+[16165.261137] my_time: call my_timer_callback, delay: 5000 [ms]
+[16170.376691] my_time: call my_timer_callback, delay: 5000 [ms]
+[16170.747261] my_time: call my_store
+[16170.747265] my_time: call my_store, invalid value of the delay: 1
+[16170.747267] my_time: call my_store, using default: 5000
+[16175.748901] my_time: call my_timer_callback, delay: 5000 [ms]
+[16180.863551] my_time: call my_timer_callback, delay: 5000 [ms]
+[16185.979096] my_time: call my_timer_callback, delay: 5000 [ms]
+[16187.781406] my_time: call my_store
+[16187.781410] my_time: call my_store, invalid value of the delay: 6
+[16187.781412] my_time: call my_store, using default: 5000
+[16192.885044] my_time: call my_timer_callback, delay: 5000 [ms]
+[16198.001295] my_time: call my_timer_callback, delay: 5000 [ms]
+[16203.116160] my_time: call my_timer_callback, delay: 5000 [ms]
+[16206.525201] my_time: call my_store
+[16206.525204] my_time: call my_store, can't read delay value!
+[16211.557390] my_time: call my_timer_callback, delay: 5000 [ms]
+[16216.672922] my_time: call my_timer_callback, delay: 5000 [ms]
+[16221.788650] my_time: call my_timer_callback, delay: 5000 [ms]
+[16226.903444] my_time: call my_timer_callback, delay: 5000 [ms]
+[16232.019826] my_time: call my_timer_callback, delay: 5000 [ms]
+[16237.135404] my_time: call my_timer_callback, delay: 5000 [ms]
+[16242.250068] my_time: call my_timer_callback, delay: 5000 [ms]
+[16247.365837] my_time: call my_timer_callback, delay: 5000 [ms]
+[16252.481467] my_time: call my_timer_callback, delay: 5000 [ms]
+[16257.597082] my_time: call my_timer_callback, delay: 5000 [ms]
+[16262.712189] my_time: call my_timer_callback, delay: 5000 [ms]
+[16265.054779] my_time: call my_store
+[16267.060387] my_time: call my_timer_callback, delay: 2000 [ms]
+[16269.075265] my_time: call my_timer_callback, delay: 2000 [ms]
+[16271.089700] my_time: call my_timer_callback, delay: 2000 [ms]
+[16273.104114] my_time: call my_timer_callback, delay: 2000 [ms]
+[16275.117559] my_time: call my_timer_callback, delay: 2000 [ms]
+[16277.131978] my_time: call my_timer_callback, delay: 2000 [ms]
+[16279.145903] my_time: call my_timer_callback, delay: 2000 [ms]
+[16280.351788] my_time: removed
