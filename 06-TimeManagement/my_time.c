@@ -18,16 +18,22 @@ static unsigned long delta_in_ms;
 static struct timespec epoch_now;
 static struct timer_list my_timer;
 
+static long delay = DEFAULT_DELAY_IN_MS;
 
-static void mod_my_timer(void)
+module_param(delay, long, 0444);
+
+static void mod_my_timer(unsigned long val_in_ms)
 {
-	mod_timer(&my_timer, jiffies + msecs_to_jiffies(delta_in_ms));
+	if (!val_in_ms)
+		return;
+	mod_timer(&my_timer, jiffies + msecs_to_jiffies(val_in_ms));
 }
 
 static void my_timer_callback(unsigned long data)
 {
-	pr_info("my_time: call %s, delay: %lu [ms]\n", __func__, delta_in_ms);
-	mod_my_timer();
+	pr_info("my_time: timer called (%s), timer delay: %lu [ms]\n",
+		__func__, delta_in_ms);
+	mod_my_timer(delta_in_ms);
 }
 
 static ssize_t my_show(struct class *class, struct class_attribute *attr,
@@ -56,7 +62,7 @@ static ssize_t my_show(struct class *class, struct class_attribute *attr,
 			last_read.tm_hour, last_read.tm_min, last_read.tm_sec);
 		jiffies_stamp = jiffies_now;
 	} else {
-		sprintf(buf, "Overflow detected. Re-init now.");
+		sprintf(buf, "Overflow detected. Re-init now.\n");
 		jiffies_stamp = jiffies_now;
 	}
 	return strlen(buf);
@@ -68,21 +74,30 @@ static ssize_t my_store(struct class *class, struct class_attribute *attr,
 	int ret_value;
 
 	pr_info("my_time: call %s", __func__);
-	ret_value = sscanf(buf, "%lu", &delta_in_ms);
+	ret_value = sscanf(buf, "%lu", &delay);
+
+	pr_info("my_time: call %s, new delay obtained: %lu\n", __func__, delay);
+	if (delay > 0 && delay < MIN_DELAY_IN_MS)
+		pr_info("my_time: call %s, value out of bounds, use old value: %lu\n",
+			__func__, delta_in_ms);
 
 	if (ret_value != 1) {
 		pr_info("my_time: call %s, can't read delay value!\n", __func__);
-	}
-
-	if (delta_in_ms < MIN_DELAY_IN_MS) {
-		pr_info("my_time: call %s, invalid value of the delay: %lu\n",
+		pr_info("my_time: call %s, use old value: %ld\n",
 			__func__, delta_in_ms);
-		delta_in_ms = DEFAULT_DELAY_IN_MS;
-		pr_info("my_time: call %s, using default: %lu\n", __func__,
-			delta_in_ms);
 	}
 
-	mod_my_timer();
+	if (ret_value == 1 && (delay == 0  || delay > MIN_DELAY_IN_MS)) {
+		if (delay == 0)
+			pr_info("my_time: call %s, switch timer off!\n", __func__);
+		else
+			pr_info("my_time: call %s, set new timer delay value: %ld\n",
+				__func__, delay);
+		delta_in_ms = delay;
+		delay = 0;
+	}
+
+	mod_my_timer(delta_in_ms);
 	return count;
 }
 
@@ -92,7 +107,9 @@ static ssize_t my_info(struct class *class, struct class_attribute *attr,
 {
 
 	pr_info("my_time: call %s", __func__);
-	sprintf(buf, "Time delay now is: %ld [ms]", delta_in_ms);
+	sprintf(buf, "Time delay now is: %ld [ms]\n", delta_in_ms);
+	if (delta_in_ms == 0)
+		sprintf(buf + strlen(buf), "Timer switch off.\n");
 	return strlen(buf);
 }
 
@@ -140,9 +157,16 @@ static int my_init(void)
 		class_destroy(attr_class);
 		return ret;
 	}
-	delta_in_ms = DEFAULT_DELAY_IN_MS;
+
+	if (delay != 0 && delay < DEFAULT_DELAY_IN_MS) {
+		pr_info("my_time: param value out of bounds: %ld", delay);
+		delay = DEFAULT_DELAY_IN_MS;
+		pr_info("my_time: set time delay to default: %ld", delay);
+	}
+
 	setup_timer(&my_timer, my_timer_callback, 0);
-	mod_my_timer();
+	delta_in_ms = delay;
+	mod_my_timer(delta_in_ms);
 
 	pr_info("my_time: loaded\n");
 	return 0;
