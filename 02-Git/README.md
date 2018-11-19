@@ -1,4 +1,6 @@
-# Homework:
+# Git
+
+## Homework
 
 Create a rock-paper-scissors console game
 (rules https://en.wikipedia.org/wiki/Rock%E2%80%93paper%E2%80%93scissors)

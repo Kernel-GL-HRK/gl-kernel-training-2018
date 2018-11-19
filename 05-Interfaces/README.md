@@ -1,4 +1,6 @@
-# Homework:
+# Interfaces (procfs, sysfs)
+
+## Homework
 
 procfs and sysfs Kernel module interfaces:
 
