@@ -5,11 +5,10 @@
 #include <linux/uaccess.h>
 #include <linux/device.h>
 #include <linux/ctype.h>
+#include <linux/slab.h>
 
-#define UP_CONV_MAXLEN 128
 
-static char uppercase_conv[UP_CONV_MAXLEN + 1];
-static ssize_t uppercase_conv_size;
+static char *uppercase_conv;
 
 #define LO_CONV_MAXLEN 128
 
@@ -73,53 +72,57 @@ static int up_stat_r_called;
 static int up_stat_w_called;
 static int up_stat_chars;
 
+static void up_free_buf(void)
+{
+	kfree(uppercase_conv);
+	uppercase_conv = NULL;
+}
+
 static ssize_t up_conv_write(struct file *file, const char __user *pbuf,
 				size_t count, loff_t *ppos)
 {
+	size_t i;
+
 	up_stat_w_called++;
 
-	if (uppercase_conv_size == UP_CONV_MAXLEN)
-		return -ENOMEM;
+	up_free_buf();
 
-	size_t copy_count = min(count, (size_t)UP_CONV_MAXLEN - *ppos);
+	uppercase_conv = kmalloc(count + 1, GFP_KERNEL);
 
-	if (copy_from_user(uppercase_conv + *ppos, pbuf, copy_count))
+	if (copy_from_user(uppercase_conv, pbuf, count)) {
+		kfree(uppercase_conv);
+		uppercase_conv = 0;
 		return -EFAULT;
+	}
 
-	uppercase_conv_size += copy_count;
+	uppercase_conv[count] = '\0';
 
-	pr_info("uppercase converter: %d bytes written\n", copy_count);
-
-	int i;
-
-
-	for (i = *ppos; i < (*ppos + copy_count); i++) {
+	for (i = 0; i < count; i++) {
 		up_stat_chars++;
 		uppercase_conv[i] = toupper(uppercase_conv[i]);
 	}
 
-	*ppos += copy_count;
-
-	return copy_count;
+	return count;
 }
 
 static ssize_t up_conv_read(struct file *file, char __user *pbuf,
 				size_t count, loff_t *ppos)
 {
 	up_stat_r_called++;
-	size_t bytes_left = uppercase_conv_size - *ppos;
 
-	size_t read_amount = min(bytes_left, count);
+	if (!uppercase_conv)
+		return 0;
 
-	/*do not copy anything , if read amount is 0*/
-	if (read_amount
-		&& copy_to_user(pbuf, uppercase_conv + *ppos, read_amount))
+	size_t copy_count = strlen(uppercase_conv);
+
+	if (copy_to_user(pbuf, uppercase_conv, copy_count))
 		return -EFAULT;
 
-	*ppos += read_amount;
+	pr_info("uppercase converter: %d bytes read\n", copy_count);
 
-	pr_info("uppercase converter: %d bytes read\n", read_amount);
-	return read_amount;
+	up_free_buf();
+
+	return copy_count;
 }
 
 static ssize_t up_stat_read(struct file *file, char __user *pbuf,
@@ -173,6 +176,8 @@ static struct class *lowercase_conv_class;
 
 static void converter_exit(void)
 {
+	up_free_buf();
+
 	if (stat_file_created)
 		class_remove_file(lowercase_conv_class, &class_attr_lo_stat);
 
