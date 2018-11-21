@@ -5,15 +5,18 @@
 #include <linux/proc_fs.h>
 #include <linux/uaccess.h>
 #include <linux/string.h>
+#include <linux/kernel.h>
 
 #define MODULE_NAME "my_procfs"
 
 
 struct {
 	char 	buf[PAGE_SIZE];
+	char	statistics_buf[PAGE_SIZE];
 	ssize_t buf_size;
 	struct 	proc_dir_entry* folder;
 	struct 	proc_dir_entry* convert_entry;
+	struct 	proc_dir_entry* statistic_entry;
 	ssize_t total_processed_bytes;
 	ssize_t total_altered_bytes;
 } module_state;
@@ -69,7 +72,33 @@ static ssize_t convert_read(struct file *file, char __user *pbuf, size_t count, 
 	return num;
 }
 
-	static struct file_operations entry_ops; 
+static ssize_t statistic_read(struct file *file, char __user *pbuf, size_t count, loff_t *ppos)
+{
+	ssize_t num, not_copied = 0;
+	int bytes_were_written;
+
+	if(ppos && *ppos > 0)
+		return 0; //continious read 
+	
+	bytes_were_written = snprintf(module_state.statistics_buf,PAGE_SIZE,
+		MODULE_NAME": usage\n"\
+		"\t bytes processed %d\n"\
+		"\t bytes converted %d\n", module_state.total_processed_bytes, module_state.total_altered_bytes);
+
+	num = min_t(ssize_t, bytes_were_written, count);
+
+	if (num) {
+		not_copied = copy_to_user(pbuf, module_state.statistics_buf, num);
+		num -= not_copied;
+	}
+
+	return num;
+}
+
+
+
+static struct file_operations entry_ops; 
+static struct file_operations entry_ops_statistic; 
 
 static int mymodule_init(void)
 {
@@ -95,6 +124,20 @@ static int mymodule_init(void)
 		return -ENOMEM;
 	}
 
+	memset(&entry_ops_statistic,0,sizeof(struct file_operations));
+	
+	entry_ops_statistic.owner = THIS_MODULE;
+	entry_ops_statistic.read = statistic_read;
+	
+	module_state.statistic_entry = proc_create("statistic", 0444, module_state.folder, &entry_ops_statistic);
+	if (!module_state.statistic_entry) {
+		proc_remove(module_state.convert_entry);
+		proc_remove(module_state.folder);
+		pr_err(MODULE_NAME": error creating procfs entry\n");
+		return -ENOMEM;
+	}
+	
+
 	pr_info(MODULE_NAME": module loaded\n");
 	return 0;
 }
@@ -103,6 +146,7 @@ static void mymodule_exit(void)
 {
 	proc_remove(module_state.folder);
 	proc_remove(module_state.convert_entry);
+	proc_remove(module_state.statistic_entry);
 	pr_info(MODULE_NAME": module unloaded\n");
 }
 
