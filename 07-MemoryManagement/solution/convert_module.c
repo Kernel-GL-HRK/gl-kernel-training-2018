@@ -6,9 +6,7 @@
 #include <linux/device.h>
 #include <linux/ctype.h>
 #include <linux/slab.h>
-
-
-static char *uppercase_conv;
+#include <linux/list.h>
 
 #define LO_CONV_MAXLEN 128
 
@@ -72,35 +70,94 @@ static int up_stat_r_called;
 static int up_stat_w_called;
 static int up_stat_chars;
 
-static void up_free_buf(void)
+static LIST_HEAD(up_conv_list);
+
+static struct uppercase_token {
+	char *buffer;
+	struct list_head list;
+};
+
+static void uppercase_conv_storage_init(void)
 {
-	kfree(uppercase_conv);
-	uppercase_conv = NULL;
+	INIT_LIST_HEAD(&up_conv_list);
+}
+
+static int uppercase_conv_put_string(char __user *str, size_t str_size)
+{
+
+	struct uppercase_token *tail =
+		kmalloc(sizeof(struct uppercase_token), GFP_KERNEL);
+
+	if (!tail)
+		return -ENOMEM;
+
+	tail->buffer = kmalloc(str_size + 1, GFP_KERNEL);
+
+	if (!tail->buffer) {
+		kfree(tail);
+		return -ENOMEM;
+	}
+
+	copy_from_user(tail->buffer, str, str_size);
+
+	tail->buffer[str_size] = '\0';
+
+	size_t i;
+
+	for (i = 0; i < str_size; i++) {
+		up_stat_chars++;
+		tail->buffer[i] = toupper(tail->buffer[i]);
+	}
+
+	list_add_tail(&tail->list, &up_conv_list);
+
+	return 0;
+}
+
+static int uppercase_conv_peek(struct uppercase_token *str)
+{
+
+	if (list_empty(&up_conv_list))
+		return -ENODATA;
+
+	*str = *list_last_entry(&up_conv_list,
+				struct uppercase_token, list);
+
+	return 0;
+}
+
+static void uppercase_conv_drop_tail(void)
+{
+
+	struct uppercase_token *remove_this = list_last_entry(
+			&up_conv_list, struct uppercase_token, list);
+
+	list_del(&remove_this->list);
+	kfree(remove_this->buffer);
+	kfree(remove_this);
+}
+
+static void uppercase_conv_storage_clean(void)
+{
+	while (!list_empty(&up_conv_list))
+		uppercase_conv_drop_tail();
+}
+
+static int up_conv_token_read;
+
+static int up_conv_open(struct inode *n, struct file *f)
+{
+	up_conv_token_read = 0;
+	return 0;
 }
 
 static ssize_t up_conv_write(struct file *file, const char __user *pbuf,
 				size_t count, loff_t *ppos)
 {
-	size_t i;
 
 	up_stat_w_called++;
 
-	up_free_buf();
-
-	uppercase_conv = kmalloc(count + 1, GFP_KERNEL);
-
-	if (copy_from_user(uppercase_conv, pbuf, count)) {
-		kfree(uppercase_conv);
-		uppercase_conv = 0;
-		return -EFAULT;
-	}
-
-	uppercase_conv[count] = '\0';
-
-	for (i = 0; i < count; i++) {
-		up_stat_chars++;
-		uppercase_conv[i] = toupper(uppercase_conv[i]);
-	}
+	uppercase_conv_put_string(pbuf, count);
 
 	return count;
 }
@@ -110,17 +167,23 @@ static ssize_t up_conv_read(struct file *file, char __user *pbuf,
 {
 	up_stat_r_called++;
 
-	if (!uppercase_conv)
+	if (up_conv_token_read)
 		return 0;
 
-	size_t copy_count = strlen(uppercase_conv);
+	struct uppercase_token last_wr;
 
-	if (copy_to_user(pbuf, uppercase_conv, copy_count))
+	if (uppercase_conv_peek(&last_wr))
+		return 0;
+
+	size_t copy_count = strlen(last_wr.buffer);
+
+	if (copy_to_user(pbuf, last_wr.buffer, copy_count))
 		return -EFAULT;
 
 	pr_info("uppercase converter: %d bytes read\n", copy_count);
 
-	up_free_buf();
+	up_conv_token_read = 1;
+	uppercase_conv_drop_tail();
 
 	return copy_count;
 }
@@ -158,6 +221,7 @@ const static struct file_operations uppercase_ops = {
 	.owner = THIS_MODULE,
 	.read = up_conv_read,
 	.write = up_conv_write,
+	.open = up_conv_open
 };
 
 const static struct file_operations up_stat_ops = {
@@ -176,7 +240,7 @@ static struct class *lowercase_conv_class;
 
 static void converter_exit(void)
 {
-	up_free_buf();
+	uppercase_conv_storage_clean();
 
 	if (stat_file_created)
 		class_remove_file(lowercase_conv_class, &class_attr_lo_stat);
@@ -196,6 +260,8 @@ static void converter_exit(void)
 
 static int converter_init(void)
 {
+	uppercase_conv_storage_init();
+
 	uppercase_conv_dir = proc_mkdir("to_uppercase", NULL);
 	if (uppercase_conv_dir == NULL) {
 		pr_err("uppercase converter: error creating procfs directory\n");
