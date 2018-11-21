@@ -1,0 +1,65 @@
+~/projects/training/gl-kernel-training-2018/07-MemoryManagement$ insmod memory_slab.ko 
+~/projects/training/gl-kernel-training-2018/07-MemoryManagement$ cat /sys/class/toLower/
+cvrt  stat  
+~/projects/training/gl-kernel-training-2018/07-MemoryManagement$ cat /sys/class/toLower/stat 
+Converter statistics:
+Called: 0
+Write: 0
+Read : 0
+Converted: 0
+Now in buffer: (null)~/projects/training/gl-kernel-training-2018/07-MemoryManagement$ cat /sys/class/toLower/stat 
+Converter statistics:
+Called: 0
+Write: 0
+Read : 0
+Converted: 0
+Now in buffer: (null)~/projects/training/gl-kernel-training-2018/07-MemoryManagement$ echo ABSDfghjUIYT > /sys/class/toLower/cvrt 
+~/projects/training/gl-kernel-training-2018/07-MemoryManagement$ cat /sys/class/toLower/stat 
+Converter statistics:
+Called: 1
+Write: 1
+Read : 0
+Converted: 8
+Now in buffer: absdfghjuiyt~/projects/training/gl-kernel-training-2018/07-MemoryManagement$ echo ABSDfghjUIYT > /sys/class/toLower/cvrt 
+~/projects/training/gl-kernel-training-2018/07-MemoryManagement$ cat /sys/class/toLower/stat 
+Converter statistics:
+Called: 2
+Write: 2
+Read : 0
+Converted: 16
+Now in buffer: absdfghjuiyt~/projects/training/gl-kernel-training-2018/07-MemoryManagement$ echo ABSDfghjUIYT2111321426738re94rwq4fq6w879/t4ui3o23uio2hedewqn > /sys/class/toLower/cvrt 
+~/projects/training/gl-kernel-training-2018/07-MemoryManagement$ cat /sys/class/toLower/stat 
+Converter statistics:
+Called: 3
+Write: 3
+Read : 0
+Converted: 24
+Now in buffer: absdfghjuiyt2111321426738re94rwq4fq6w879/t4ui3o23uio2hedewqn~/projects/training/gl-kernel-training-2018/07-MemoryManagement$ cat /sys/class/toLower/cvrt 
+absdfghjuiyt2111321426738re94rwq4fq6w879/t4ui3o23uio2hedewq~/projects/training/
+~/projects/training/gl-kernel-training-2018/07-MemoryManagement$ mmod memory_slab
+bash: mmod: команду не знайдено
+~/projects/training/gl-kernel-training-2018/07-MemoryManagement$ rmmod memory_slab
+
+~/projects/training/gl-kernel-training-2018/07-MemoryManagement$ dmesg
+[ 2128.370663] memory_slab: cache create!
+[ 2128.370673] memory_slab: module loaded
+[ 2162.095339] memory_slab: call info_read
+[ 2169.860606] memory_slab: call info_read
+[ 2216.412842] memory_slab: call cvrt_write
+[ 2216.412844] memory_slab: memory free.
+[ 2216.412849] memory_slab: cstr function call: 1
+[ 2216.412850] memory_slab: memory allocate.
+[ 2219.957813] memory_slab: call info_read
+[ 2224.946718] memory_slab: call cvrt_write
+[ 2224.946721] memory_slab: memory free.
+[ 2224.946722] memory_slab: memory allocate.
+[ 2226.709420] memory_slab: call info_read
+[ 2238.787202] memory_slab: call cvrt_write
+[ 2238.787205] memory_slab: memory free.
+[ 2238.787206] memory_slab: memory allocate.
+[ 2240.773924] memory_slab: call info_read
+[ 2252.961516] memory_slab: call cvrt_read
+[ 2376.988075] memory_slab: memory free.
+[ 2376.988083] memory_slab: cache destroy!
+[ 2376.988937] memory_slab: module exited
+~/projects/training/gl-kernel-training-2018/07-MemoryManagement$ 
