@@ -1,4 +1,3 @@
-
 #include <linux/init.h>
 #include <linux/module.h>
 #include <linux/device.h>
@@ -11,12 +10,28 @@
 
 
 struct {
-	char buf[PAGE_SIZE];
+	char 	buf[PAGE_SIZE];
 	ssize_t buf_size;
-	struct proc_dir_entry* folder;
-	struct proc_dir_entry* convert_entry;
+	struct 	proc_dir_entry* folder;
+	struct 	proc_dir_entry* convert_entry;
+	ssize_t total_processed_bytes;
+	ssize_t total_altered_bytes;
 } module_state;
-
+ 
+static void convert_buff(void)
+{
+	ssize_t pos = 0;
+	for(; pos < module_state.buf_size; ++pos)
+	{
+		char cs = module_state.buf[pos];
+		if(cs >='a' && cs <='z')
+		{
+			++module_state.total_altered_bytes;
+			module_state.buf[pos]  += 'A'-'a' ;
+		}
+		++module_state.total_processed_bytes;
+	}
+}
 
 static ssize_t convert_write(struct file *file, const char __user *pbuf, size_t count, loff_t *ppos)
 {
@@ -26,6 +41,7 @@ static ssize_t convert_write(struct file *file, const char __user *pbuf, size_t 
 
 	not_copied = copy_from_user(module_state.buf, pbuf, safe_size);
 	module_state.buf_size = safe_size - not_copied;
+	convert_buff();
 
 	return module_state.buf_size;
 }
@@ -57,6 +73,8 @@ static ssize_t convert_read(struct file *file, char __user *pbuf, size_t count, 
 
 static int mymodule_init(void)
 {
+	memset(&module_state, 0, sizeof(module_state));
+
 	module_state.folder=proc_mkdir(MODULE_NAME,NULL);
 	if(!module_state.folder){
 		pr_err(MODULE_NAME": error creating procfs entry\n");
