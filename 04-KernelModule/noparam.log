@@ -1,0 +1,7 @@
+64:alex@deeplair ~/playground/kernel-training/gl-kernel-training-2018 $ sudo insmod simpletoy.ko
+64:alex@deeplair ~/playground/kernel-training/gl-kernel-training-2018 $ sudo lsmod |grep simpletoy
+simpletoy              16384  0
+64:alex@deeplair ~/playground/kernel-training/gl-kernel-training-2018 $ sudo rmmod simpletoy
+64:alex@deeplair ~/playground/kernel-training/gl-kernel-training-2018 $ sudo dmesg
+[2696729.292829] I've got into sandbox!
+[2696751.222304] I'm going home!

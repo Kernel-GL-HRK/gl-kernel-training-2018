@@ -1,0 +1,6 @@
+64:alex@deeplair ~/playground/kernel-training/gl-kernel-training-2018 $ sudo insmod simpletoy.ko mycode=101
+insmod: ERROR: could not insert module simpletoy.ko: Numerical result out of range
+64:alex@deeplair ~/playground/kernel-training/gl-kernel-training-2018 $ sudo lsmod |grep simpletoy
+64:alex@deeplair ~/playground/kernel-training/gl-kernel-training-2018 $ sudo dmesg
+[2696862.222741] I've got into sandbox!
+[2696862.222749] Code 101 > 100 - I will not play here!
