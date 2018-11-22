@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash
 
 #init variables
 # TOF: Task Out File
@@ -38,7 +38,7 @@ if [[ $# > 0 ]]; then
 				if (( $2 > 1 )); then
 					FNUM=$2
 				else
-					print_error "2-nd argument is not number or less than 2" 1;
+					print_error "2-nd argument is not number or less than 2" 1
 				fi;
 				# shift arg's for searching 3-rd arg
 				shift 2;
@@ -51,7 +51,7 @@ if [[ $# > 0 ]]; then
 				if [[ -n "$1" ]]; then
 					TOF=$1
 				else
-					print_error "3-rd argument is not file or path" 1;
+					print_error "3-rd argument is not file or path" 1
 				fi
 				break; ;;
 		esac
@@ -62,7 +62,7 @@ fi
 DIR="$(dirname "$TOF")"
 mkdir --parents $DIR
 if [[ "$?" != "0" ]]; then
-	print_error "Error during make directory" 1;
+	print_error "Error during make directory" 1
 fi
 
 #prepeare output file
@@ -139,7 +139,7 @@ else
 fi
 #MB:
 echo -n "Motherboard: " >> $TOF;
-str=$(sudo dmidecode -t baseboard | grep 'Manufacturer:')	
+str=$(sudo dmidecode -t baseboard | grep 'Manufacturer:')
 if (( ${#str} == 0 )); then
 	echo -n 'Unknown' >> $TOF
 else
