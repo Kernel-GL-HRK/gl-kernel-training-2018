@@ -19,11 +19,12 @@ function print_help()
 	#HEREDOC
 }
 
-function print_error()
+print_error()
 {
-	#printf "$1" >&2
 	echo "Wrong parameters!"
 	echo "For more info use help: $0 [-h|--help]"
+	printf "$1" >&2;
+	exit $2
 }
 
 #detect params
@@ -37,8 +38,7 @@ if [[ $# > 0 ]]; then
 				if (( $2 > 1 )); then
 					FNUM=$2
 				else
-					printf "2-nd argument is not number or less than 2" >&2;
-					print_error; exit 1;
+					print_error "2-nd argument is not number or less than 2" 1;
 				fi;
 				# shift arg's for searching 3-rd arg
 				shift 2;
@@ -51,8 +51,7 @@ if [[ $# > 0 ]]; then
 				if [[ -n "$1" ]]; then
 					TOF=$1
 				else
-					printf "3-rd argument is not file or path" >&2;
-					print_error; exit 1;
+					print_error "3-rd argument is not file or path" 1;
 				fi
 				break; ;;
 		esac
@@ -63,8 +62,7 @@ fi
 DIR="$(dirname "$TOF")"
 mkdir --parents $DIR
 if [[ "$?" != "0" ]]; then
-	printf "Error during make directory" >&2
-	print_error; exit 1;
+	print_error "Error during make directory" 1;
 fi
 
 #prepeare output file
@@ -141,7 +139,7 @@ else
 fi
 #MB:
 echo -n "Motherboard: " >> $TOF;
-str=$(sudo dmidecode -t baseboard | grep 'Manufacturer:')
+str=$(sudo dmidecode -t baseboard | grep 'Manufacturer:')	
 if (( ${#str} == 0 )); then
 	echo -n 'Unknown' >> $TOF
 else
@@ -200,14 +198,15 @@ else
 fi
 #Uptime
 echo -n "Uptime: " >> $TOF
-if [[ $(uptime -p) = "" ]]; then
+uptimer=$(uptime -p)
+if [[ $uptimer = "" ]]; then
 	echo 'Unknown' >> $TOF
 else
-	echo $(uptime -p) >> $TOF
+	echo $uptimer >> $TOF
 fi
 #Processings
 echo -n "Processes running: " >> $TOF
-str=$(ps x | wc -l)
+str=$(ps | wc -l)
 if (( $str == 0 )); then
 	echo 'Unknown' >> $TOF
 else
@@ -238,9 +237,9 @@ do
 		else
 			bitmask=${mask#*'Mask:'}
 			case $bitmask in
-				255.0.0.0    ) echo "24" >> $TOF;;
+				255.0.0.0    ) echo "8"  >> $TOF;;
 				255.255.0.0  ) echo "16" >> $TOF;;
-				255.255.255.0) echo "8"  >> $TOF;;
+				255.255.255.0) echo "24" >> $TOF;;
 				*            ) echo "-"  >> $TOF;;
 			esac
 		fi
