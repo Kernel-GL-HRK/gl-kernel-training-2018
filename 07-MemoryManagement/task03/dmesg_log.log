@@ -1,0 +1,39 @@
+task03$ insmod memory_pool.ko 
+(10 times) task03$ echo "123asERtyUIopLKjhNMzz" > /sys/class/toLower/cvrt  
+task03$ rmmod memory_pool 
+
+
+[ 8481.202669] memory_slab_list: module loaded
+[ 8483.571951] memory_slab_list: call cvrt_write
+[ 8483.571958] memory_slab_list: kmem_cache_create called : 5
+[ 8484.401495] memory_slab_list: call cvrt_write
+[ 8484.401503] memory_slab_list: kmem_cache_create called : 6
+[ 8485.081896] memory_slab_list: call cvrt_write
+[ 8485.081904] memory_slab_list: kmem_cache_create called : 7
+[ 8485.669596] memory_slab_list: call cvrt_write
+[ 8485.669603] memory_slab_list: kmem_cache_create called : 8
+[ 8486.223263] memory_slab_list: call cvrt_write
+[ 8486.223274] memory_slab_list: kmem_cache_create called : 9
+[ 8486.984040] memory_slab_list: call cvrt_write
+[ 8486.984048] memory_slab_list: kmem_cache_create called : 10
+[ 8487.537443] memory_slab_list: call cvrt_write
+[ 8487.537455] memory_slab_list: kmem_cache_create called : 11
+[ 8488.068044] memory_slab_list: call cvrt_write
+[ 8488.068052] memory_slab_list: kmem_cache_create called : 12
+[ 8488.610875] memory_slab_list: call cvrt_write
+[ 8488.610883] memory_slab_list: kmem_cache_create called : 13
+[ 8489.166140] memory_slab_list: call cvrt_write
+[ 8489.166148] memory_slab_list: kmem_cache_create called : 14
+[ 8536.154186] memory_slab_list: call cvrt_read
+[ 8550.397982] memory_slab_list: freeing => 123asertyuioplkjhnmzz
+[ 8550.397985] memory_slab_list: freeing => 123asertyuioplkjhnmzz
+[ 8550.397986] memory_slab_list: freeing => 123asertyuioplkjhnmzz
+[ 8550.397987] memory_slab_list: freeing => 123asertyuioplkjhnmzz
+[ 8550.397987] memory_slab_list: freeing => 123asertyuioplkjhnmzz
+[ 8550.397988] memory_slab_list: freeing => 123asertyuioplkjhnmzz
+[ 8550.397988] memory_slab_list: freeing => 123asertyuioplkjhnmzz
+[ 8550.397989] memory_slab_list: freeing => 123asertyuioplkjhnmzz
+[ 8550.397990] memory_slab_list: freeing => 123asertyuioplkjhnmzz
+[ 8550.397991] memory_slab_list: freeing => 123asertyuioplkjhnmzz
+[ 8550.398004] memory_slab_list: cache destroyed!
+[ 8550.399073] memory_slab_list: module exited

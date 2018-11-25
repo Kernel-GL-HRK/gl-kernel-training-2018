@@ -1,0 +1,43 @@
+task04$ insmod memory_resize.ko 
+task04$ echo AbSnDnFmGmHGzz > /sys/class/toLower/cvrt 
+task04$ echo AbSnDnFmGmHGzz > /sys/class/toLower/cvrt 
+task04$ echo AbSnDnFmGmHGzz > /sys/class/toLower/cvrt 
+task04$ echo AbSnDnFmGmHGzz > /sys/class/toLower/cvrt 
+task04$ echo AbSnDnFmGmHGzz > /sys/class/toLower/cvrt 
+task04$ echo AbSnDnFmGmHGzz > /sys/class/toLower/cvrt 
+task04$ echo AbSnDnFmGmHGzz > /sys/class/toLower/cvrt 
+task04$ echo AbSnDnFmGmHGzz > /sys/class/toLower/cvrt 
+task04$ echo AbSnDnFmGmHGzz > /sys/class/toLower/cvrt 
+task04$ echo AbSnDnFmGmHGzz > /sys/class/toLower/cvrt 
+task04$ cat /sys/class/toLower/cvrt 
+absndnfmgmhgzz
+absndnfmgmhgzz
+absndnfmgmhgzz
+absndnfmgmhgzz
+absndnfmgmhgzz
+absndnfmgmhgzz
+absndnfmgmhgzz
+absndnfmgmhgzz
+absndnfmgmhgzz
+absndnfmgmhgzz
+task04$ dmesg
+[ 4209.454377] memory_resize: call cvrt_read
+[ 4238.207885] memory_resize module exited
+[ 4263.311698] memory_resize module loaded
+[ 4283.720863] memory_resize: call cvrt_write
+[ 4283.720866] memory_resize: block allocate (1), size 16
+[ 4284.565131] memory_resize: call cvrt_write
+[ 4284.565134] memory_resize: block allocate(2), size 32
+[ 4285.130739] memory_resize: call cvrt_write
+[ 4285.130743] memory_resize: block allocate(2), size 64
+[ 4285.636254] memory_resize: call cvrt_write
+[ 4286.107032] memory_resize: call cvrt_write
+[ 4286.107036] memory_resize: block allocate(2), size 128
+[ 4286.543941] memory_resize: call cvrt_write
+[ 4286.972311] memory_resize: call cvrt_write
+[ 4287.375838] memory_resize: call cvrt_write
+[ 4287.768484] memory_resize: call cvrt_write
+[ 4287.768489] memory_resize: block allocate(2), size 256
+[ 4288.196245] memory_resize: call cvrt_write
+[ 4299.623913] memory_resize: call cvrt_read
+task04$ 
