@@ -1,0 +1,65 @@
+task02$ insmod memory_slab_list.ko 
+task02$ echo CCCC > /sys/class/toLower/cvrt 
+task02$ echo AAAA > /sys/class/toLower/cvrt 
+task02$ echo DDDD > /sys/class/toLower/cvrt 
+task02$ cat /sys/class/toLower/cvrt 
+ddddaaaacccc
+
+task02$ cat /sys/class/toLower/stat 
+Converter statistics:
+Called: 4
+Write: 3
+Read : 1
+Converted: 12
+Now in buffer: ddddaaaacccc
+
+task02$ echo "123asERtyUIopLKjhNMzz" > /sys/class/toLower/cvrt 
+task02$ cat /sys/class/toLower/cvrt 
+123asertyuioplkjhnmzzddddaaaacccc
+
+task02$ cat /sys/class/toLower/stat
+Converter statistics:
+Called: 6
+Write: 4
+Read : 2
+Converted: 20
+Now in buffer: 123asertyuioplkjhnmzzddddaaaacccc
+
+task02$ dmesg
+[ 1395.692983] memory_slab_list: cache created.
+[ 1395.692992] memory_slab_list: new message list created.
+[ 1395.692993] memory_slab_list: module loaded
+[ 1406.727051] memory_slab_list: call cvrt_write
+[ 1406.727058] memory_slab_list: kmem_cache_create called : 1
+[ 1413.136705] memory_slab_list: call cvrt_write
+[ 1413.136712] memory_slab_list: kmem_cache_create called : 2
+[ 1419.762055] memory_slab_list: call cvrt_write
+[ 1419.762062] memory_slab_list: kmem_cache_create called : 3
+[ 1429.903370] memory_slab_list: call cvrt_read
+[ 1437.697395] memory_slab_list: call stat_info_read
+[ 1462.355839] memory_slab_list: freeing => cccc
+[ 1462.355842] memory_slab_list: freeing => dddd
+[ 1462.355842] memory_slab_list: freeing => aaaa
+[ 1462.355851] memory_slab_list: cache destroyed!
+[ 1462.356635] memory_slab_list: module exited
+[ 1483.719447] memory_slab_list: cache created.
+[ 1483.719458] memory_slab_list: new message list created.
+[ 1483.719458] memory_slab_list: module loaded
+[ 1489.053041] memory_slab_list: call cvrt_write
+[ 1489.053049] memory_slab_list: kmem_cache_create called : 1
+[ 1493.972579] memory_slab_list: call cvrt_write
+[ 1493.972587] memory_slab_list: kmem_cache_create called : 2
+[ 1502.200006] memory_slab_list: call cvrt_write
+[ 1502.200014] memory_slab_list: kmem_cache_create called : 3
+[ 1514.329962] memory_slab_list: call cvrt_read
+[ 1518.519384] memory_slab_list: call stat_info_read
+[ 1552.542528] memory_slab_list: call cvrt_write
+[ 1552.542536] memory_slab_list: kmem_cache_create called : 4
+[ 1561.945101] memory_slab_list: call cvrt_read
+[ 1571.315823] memory_slab_list: call stat_info_read
+[ 1583.264066] memory_slab_list: freeing => cccc
+[ 1583.264068] memory_slab_list: freeing => aaaa
+[ 1583.264069] memory_slab_list: freeing => dddd
+[ 1583.264069] memory_slab_list: freeing => 123asertyuioplkjhnmzz
+[ 1583.264077] memory_slab_list: cache destroyed!
+[ 1583.265466] memory_slab_list: module exited
