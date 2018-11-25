@@ -7,6 +7,7 @@
 #include <linux/ctype.h>
 #include <linux/slab.h>
 #include <linux/list.h>
+#include <linux/mempool.h>
 
 #define LO_CONV_MAXLEN 128
 
@@ -71,25 +72,36 @@ static int up_stat_w_called;
 static int up_stat_chars;
 
 static LIST_HEAD(up_conv_list);
+static mempool_t *list_elem_pool;
 
 static struct uppercase_token {
 	char *buffer;
 	struct list_head list;
 };
 
-static void uppercase_conv_storage_init(void)
+static int uppercase_conv_storage_init(void)
 {
 	INIT_LIST_HEAD(&up_conv_list);
+
+	list_elem_pool = mempool_create_kmalloc_pool(10,
+				sizeof(struct uppercase_token));
+
+	if (!list_elem_pool)
+		return -ENOMEM;
+
+	return 0;
 }
 
 static int uppercase_conv_put_string(char __user *str, size_t str_size)
 {
 
 	struct uppercase_token *tail =
-		kmalloc(sizeof(struct uppercase_token), GFP_KERNEL);
+				mempool_alloc(list_elem_pool, GFP_KERNEL);
 
-	if (!tail)
+	if (!tail) {
+		pr_info("uppercase converter: unable to allocate new list element\n");
 		return -ENOMEM;
+	}
 
 	tail->buffer = kmalloc(str_size + 1, GFP_KERNEL);
 
@@ -134,13 +146,15 @@ static void uppercase_conv_drop_tail(void)
 
 	list_del(&remove_this->list);
 	kfree(remove_this->buffer);
-	kfree(remove_this);
+	mempool_free(remove_this, list_elem_pool);
 }
 
 static void uppercase_conv_storage_clean(void)
 {
 	while (!list_empty(&up_conv_list))
 		uppercase_conv_drop_tail();
+
+	mempool_destroy(list_elem_pool);
 }
 
 static int up_conv_token_read;
@@ -240,7 +254,8 @@ static struct class *lowercase_conv_class;
 
 static void converter_exit(void)
 {
-	uppercase_conv_storage_clean();
+	if (list_elem_pool)
+		uppercase_conv_storage_clean();
 
 	if (stat_file_created)
 		class_remove_file(lowercase_conv_class, &class_attr_lo_stat);
@@ -260,11 +275,16 @@ static void converter_exit(void)
 
 static int converter_init(void)
 {
-	uppercase_conv_storage_init();
+	if (uppercase_conv_storage_init()) {
+		pr_err("uppercase converter: unable to init RW list");
+		converter_exit();
+		return -ENOMEM;
+	}
 
 	uppercase_conv_dir = proc_mkdir("to_uppercase", NULL);
 	if (uppercase_conv_dir == NULL) {
 		pr_err("uppercase converter: error creating procfs directory\n");
+		converter_exit();
 		return -ENOMEM;
 	}
 
