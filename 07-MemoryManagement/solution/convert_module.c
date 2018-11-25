@@ -73,6 +73,7 @@ static int up_stat_chars;
 
 static LIST_HEAD(up_conv_list);
 static mempool_t *list_elem_pool;
+static struct kmem_cache *list_cache;
 
 static struct uppercase_token {
 	char *buffer;
@@ -83,8 +84,12 @@ static int uppercase_conv_storage_init(void)
 {
 	INIT_LIST_HEAD(&up_conv_list);
 
-	list_elem_pool = mempool_create_kmalloc_pool(10,
-				sizeof(struct uppercase_token));
+	list_cache = KMEM_CACHE(uppercase_token, NULL);
+
+	if (!list_cache)
+		return -ENOMEM;
+
+	list_elem_pool = mempool_create_slab_pool(10, list_cache);
 
 	if (!list_elem_pool)
 		return -ENOMEM;
@@ -155,6 +160,8 @@ static void uppercase_conv_storage_clean(void)
 		uppercase_conv_drop_tail();
 
 	mempool_destroy(list_elem_pool);
+
+	kmem_cache_destroy(list_cache);
 }
 
 static int up_conv_token_read;
@@ -254,8 +261,7 @@ static struct class *lowercase_conv_class;
 
 static void converter_exit(void)
 {
-	if (list_elem_pool)
-		uppercase_conv_storage_clean();
+	uppercase_conv_storage_clean();
 
 	if (stat_file_created)
 		class_remove_file(lowercase_conv_class, &class_attr_lo_stat);
