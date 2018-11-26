@@ -1,0 +1,37 @@
+$ make
+make -C /lib/modules/4.4.0-139-generic/build M=/home/john/projects/gl-kernel-training-2018/04-KernelModule modules
+make[1]: Entering directory '/usr/src/linux-headers-4.4.0-139-generic'
+  CC [M]  /home/john/projects/gl-kernel-training-2018/04-KernelModule/mymodule.o
+  Building modules, stage 2.
+  MODPOST 1 modules
+  CC      /home/john/projects/gl-kernel-training-2018/04-KernelModule/mymodule.mod.o
+  LD [M]  /home/john/projects/gl-kernel-training-2018/04-KernelModule/mymodule.ko
+make[1]: Leaving directory '/usr/src/linux-headers-4.4.0-139-generic'
+$
+$
+$ sudo insmod mymodule.ko
+insmod: ERROR: could not insert module mymodule.ko: Operation not permitted
+$ sudo insmod mymodule.ko myparam=0
+$ sudo rmmod mymodule 
+$ sudo insmod mymodule.ko myparam=-5
+insmod: ERROR: could not insert module mymodule.ko: Input/output error
+$ sudo rmmod mymodule 
+rmmod: ERROR: Module mymodule is not currently loaded
+$
+$
+$ dmesg
+[17779.377247] mymodule: module loaded
+[17779.377251] mymodule: myparam = -1
+[17794.277123] mymodule: module loaded
+[17794.277126] mymodule: myparam = 0
+[17800.952512] mymodule: module exited
+[17812.058131] mymodule: module loaded
+[17812.058134] mymodule: myparam = -5
+$
+$
+$ make clean
+make -C /lib/modules/4.4.0-139-generic/build M=/home/john/projects/gl-kernel-training-2018/04-KernelModule clean
+make[1]: Entering directory '/usr/src/linux-headers-4.4.0-139-generic'
+  CLEAN   /home/john/projects/gl-kernel-training-2018/04-KernelModule/.tmp_versions
+  CLEAN   /home/john/projects/gl-kernel-training-2018/04-KernelModule/Module.symvers
+make[1]: Leaving directory '/usr/src/linux-headers-4.4.0-139-generic'

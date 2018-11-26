@@ -1,0 +1,10 @@
+john@DELL:/media/john/HDD/Projects/Linux/Kernel/linux-stable$ scripts/checkpatch.pl -f ~/projects/gl-kernel-training-2018/04-KernelModule/mymodule.c 
+Traceback (most recent call last):
+  File "scripts/spdxcheck.py", line 6, in <module>
+    from ply import lex, yacc
+ImportError: No module named ply
+total: 0 errors, 0 warnings, 37 lines checked
+
+/home/john/projects/gl-kernel-training-2018/04-KernelModule/mymodule.c has no obvious style problems and is ready for submission.
+
+
