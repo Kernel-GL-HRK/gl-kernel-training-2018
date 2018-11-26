@@ -4,6 +4,7 @@
 #include <linux/err.h>
 #include <linux/list.h>
 #include <linux/slab.h>
+#include <linux/mempool.h>
 
 
 struct call_data {
@@ -15,6 +16,7 @@ struct call_data {
 
 LIST_HEAD(calls_list);
 struct kmem_cache *slab;
+mempool_t *pool;
 static bool is_data_obtained;
 
 static bool to_upper(char *lower);
@@ -25,7 +27,7 @@ struct call_data *call_data_create(const char *buf)
 	int length = 0;
 	struct call_data *ret = NULL;
 
-	ret = kmem_cache_alloc(slab, GFP_USER);
+	ret = mempool_alloc(pool, GFP_KERNEL);
 
 	length = strlen(buf);
 	ret->str = vmalloc(length + 1);
@@ -46,7 +48,7 @@ struct call_data *call_data_create(const char *buf)
 void call_data_destroy(struct call_data *data)
 {
 	vfree(data->str);
-	kmem_cache_free(slab, data);
+	mempool_free(data, pool);
 }
 
 void call_data_dump(struct call_data *data)
@@ -153,6 +155,7 @@ static int mymodule_init(void)
 	is_data_obtained = false;
 	slab = kmem_cache_create("call_data",
 		sizeof(struct call_data), 0, 0, NULL);
+	pool = mempool_create(256, mempool_alloc_slab, mempool_free_slab, slab);
 
 	attr_class = class_create(THIS_MODULE, "sysfs_module");
 	if (attr_class == NULL) {
@@ -196,6 +199,7 @@ static void mymodule_exit(void)
 	}
 	pr_info("List empty: %d\n", list_empty(&calls_list));
 
+	mempool_destroy(pool);
 	kmem_cache_destroy(slab);
 
 	pr_info("mymodule: module exited\n");
