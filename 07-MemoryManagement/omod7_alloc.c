@@ -180,10 +180,12 @@ static ssize_t tolower_store(struct class *cl,
 		fp->datasize = bls;
 		if (fp0 == NULL) {
 			// first block in fragment - register it in fragments list
-			if (fragments == NULL)
+			if (fragments == NULL) {
 				fragments = fp;
-			else
+			} else {
 				list_add_tail(&fp->fragment, &fragments->fragment);
+				fragments = fp;
+			}
 			fp0 = fp;
 			pr_info("omod7 add block0 for fragment (%lu bytes)", bls);
 		} else {
