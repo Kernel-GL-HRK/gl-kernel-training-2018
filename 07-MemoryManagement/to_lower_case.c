@@ -8,6 +8,7 @@
 #include <linux/ctype.h>
 #include <linux/sysfs.h>
 #include <linux/device.h>
+#include <linux/list.h>
 
 #define MODULE_TAG			"LowerCase"
 
@@ -26,32 +27,41 @@ struct module_statistic {
 };
 struct module_statistic statistic;
 
+struct buffers_list_node {
+	char *buffer;
+	ssize_t len;
+	struct list_head list;
+};
+static LIST_HEAD(buffers_list);
+static struct buffers_list_node *last_readed;
+
 static char *msg_buffer;
 static int msg_size;
 
 #define CACHE_SIZE PAGE_SIZE
 /*Memmory allocation types*/
 #define SLAB_MODE 0
+#define SLAB_MODE_WITH_PRESERVE 1 
 static struct kmem_cache *slab_mem;
 
 
-static void convert_to_lowercase(void)
+static void convert_to_lowercase(char *buf, int len)
 {
 	int i;
 	char temp;
 
-	for (i = 0; i < msg_size; i++) {
-		temp = tolower(msg_buffer[i]);
-		if (temp != msg_buffer[i]) {
+	for (i = 0; i < len; i++) {
+		temp = tolower(buf[i]);
+		if (temp != buf[i]) {
 			statistic.chars_converted++;
-			msg_buffer[i] = temp;
+			buf[i] = temp;
 		}
 		if (isalpha(temp))
 			statistic.chars_alphabetic++;
 		else if (isdigit(temp))
 			statistic.chars_numeric++;
 	}
-	statistic.chars_processed += msg_size;
+	statistic.chars_processed += len;
 	statistic.use_cnt++;
 }
 
@@ -92,50 +102,77 @@ static ssize_t processed_show(struct class *class, struct class_attribute *attr,
 
 static ssize_t buffer_show(struct class *class, struct class_attribute *attr, char *buf)
 {
-	if (msg_buffer == NULL)
-		return 0;
+	struct buffers_list_node *node;
+	ssize_t ret_size;
 
 	switch (mode) {
 		case SLAB_MODE:
+			if (msg_buffer == NULL)
+				return 0;
 			memcpy(buf, msg_buffer, msg_size);
+			ret_size  = msg_size;
 			kmem_cache_free(slab_mem, msg_buffer);
 			msg_buffer = NULL;
+			break;
+		case SLAB_MODE_WITH_PRESERVE:
+			if (list_empty(&buffers_list)) {
+				return 0;
+			}
+			node = list_entry(&last_readed->list, struct buffers_list_node, list);
+			if(&node->list == &buffers_list) {
+				return 0;
+			}
+			memcpy(buf, node->buffer, node->len);
+			ret_size  = node->len;
+			last_readed = list_prev_entry(node, list);
 			break;
 	
 		default:
 			break;
 	}	
 
-	return msg_size;
+	return ret_size;
 }
 
 static ssize_t buffer_store(struct class *class, struct class_attribute *attr, const char *buf, size_t count)
 {
 	ssize_t ret_cnt;
+	struct buffers_list_node *blnode;
+	char *pmsg;
+	ssize_t *psize;
 
 	switch (mode) {
 		case SLAB_MODE:
 			if (msg_buffer == NULL) {
 				msg_buffer = kmem_cache_alloc(slab_mem, GFP_KERNEL);
+				pmsg = msg_buffer;
+				psize = &msg_size;
 			}
 			break;
-	
+		case SLAB_MODE_WITH_PRESERVE:
+			blnode = kzalloc(sizeof(struct buffers_list_node), GFP_KERNEL);
+			blnode->buffer = kmem_cache_alloc(slab_mem, GFP_KERNEL);
+			list_add_tail(&blnode->list, &buffers_list);
+			pmsg = blnode->buffer;
+			psize = &blnode->len;
+			last_readed = blnode;
+			break;
 		default:
 			break;
 	}
 
+
 	if (count < PAGE_SIZE) {
-		memcpy(msg_buffer, buf, count);
-		msg_size = count;
+		memcpy(pmsg, buf, count);
+		*psize = count;
 		ret_cnt = count;
 	} else {
-		memcpy(msg_buffer, buf, PAGE_SIZE);
-		msg_size = PAGE_SIZE;
+		memcpy(pmsg, buf, PAGE_SIZE);
+		*psize = PAGE_SIZE;
 		ret_cnt = count - PAGE_SIZE;
 	}
 
-	convert_to_lowercase();
-
+	convert_to_lowercase(pmsg, *psize);
 	return ret_cnt;
 }
 
@@ -179,6 +216,11 @@ static int __init mod_init(void)
 			if (slab_mem == NULL)
 				goto fail;
 			break;
+		case SLAB_MODE_WITH_PRESERVE:
+			slab_mem = kmem_cache_create(MODULE_TAG, CACHE_SIZE, 0, SLAB_HWCACHE_ALIGN | SLAB_POISON, NULL);
+			if (slab_mem == NULL)
+				goto fail;
+			break;
 		default:
 			break;
 	}
@@ -193,12 +235,23 @@ fail:
 
 static void __exit mod_exit(void)
 {
+	struct buffers_list_node *node;
+
 	class_unregister(&module_class);
 
 	switch (mode) {
 		case SLAB_MODE:
 			if(msg_buffer != NULL) {
 				kmem_cache_free(slab_mem, msg_buffer);
+			}
+			break;
+		case SLAB_MODE_WITH_PRESERVE:
+			if (!list_empty(&buffers_list)) {
+				list_for_each_entry_reverse(node, &buffers_list, list) {
+					if (node->buffer)
+						kmem_cache_free(slab_mem, node->buffer);
+					kfree(node);
+				}
 			}
 			break;
 	
