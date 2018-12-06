@@ -44,8 +44,10 @@ static int msg_size;
 #define SLAB_MODE 0
 #define SLAB_MODE_WITH_PRESERVE 1 
 #define POOL_MODE 2
+#define RESIZABLE_MODE  3
 static struct kmem_cache *slab_mem;
 static mempool_t *pool_mem;
+static ssize_t curent_cache_size;
 
 static void convert_to_lowercase(char *buf, int len)
 {
@@ -65,6 +67,56 @@ static void convert_to_lowercase(char *buf, int len)
 	}
 	statistic.chars_processed += len;
 	statistic.use_cnt++;
+}
+
+static int create_pool(ssize_t size)
+{
+	ssize_t cache_size = 1;
+	char name[100];
+
+	while (cache_size < size) {
+		cache_size *= 2;
+	}
+	curent_cache_size = cache_size;
+	pr_debug("Set slab size to %d\n", cache_size);
+	snprintf(name, 100, "%s-%d", MODULE_TAG, cache_size);
+	slab_mem = kmem_cache_create(name, cache_size, 0, SLAB_HWCACHE_ALIGN | SLAB_POISON, NULL);
+	pool_mem = mempool_create_slab_pool(POOL_HOT_RESERV, slab_mem);
+}
+
+static int resize_pool(ssize_t newSize)
+{
+	struct kmem_cache *new_slab_mem;
+	mempool_t *new_pool_mem;
+	struct buffers_list_node *node;
+	void *p;
+	ssize_t cache_size = 1;
+	char name[100];
+
+	while (cache_size < newSize) {
+		cache_size *= 2;
+	}
+	curent_cache_size = cache_size;
+	pr_debug("Set new slab size to %d\n", cache_size);
+
+	snprintf(name, 100, "%s-%d", MODULE_TAG, cache_size);
+	new_slab_mem = kmem_cache_create(name, cache_size, 0, SLAB_HWCACHE_ALIGN | SLAB_POISON, NULL);
+	new_pool_mem = mempool_create_slab_pool(POOL_HOT_RESERV, new_slab_mem);
+
+	if (!list_empty(&buffers_list)) {
+		list_for_each_entry(node, &buffers_list, list) {
+			p = node->buffer;
+			node->buffer = mempool_alloc(new_pool_mem, GFP_KERNEL);
+			memcpy(node->buffer, p, ksize(p));
+			mempool_free(p, pool_mem);
+			}
+	}
+
+	mempool_destroy(pool_mem);
+	kmem_cache_destroy(slab_mem);
+
+	slab_mem = new_slab_mem;
+	pool_mem = new_pool_mem;
 }
 
 static ssize_t numeric_show(struct class *class, struct class_attribute *attr, char *buf)
@@ -118,6 +170,7 @@ static ssize_t buffer_show(struct class *class, struct class_attribute *attr, ch
 			break;
 		case SLAB_MODE_WITH_PRESERVE:
 		case POOL_MODE:
+		case RESIZABLE_MODE:
 			if (list_empty(&buffers_list)) {
 				return 0;
 			}
@@ -164,19 +217,33 @@ static ssize_t buffer_store(struct class *class, struct class_attribute *attr, c
 			psize = &blnode->len;
 			last_readed = blnode;
 			break;
+		case RESIZABLE_MODE:
+			blnode = kzalloc(sizeof(struct buffers_list_node), GFP_KERNEL);
+			if (slab_mem == NULL) {
+				create_pool(count);
+			}
+			if(count > curent_cache_size) {
+				resize_pool(count);
+			}
+			blnode->buffer = mempool_alloc(pool_mem, GFP_KERNEL);
+			list_add_tail(&blnode->list, &buffers_list);
+			pmsg = blnode->buffer;
+			psize = &blnode->len;
+			last_readed = blnode;
+
+			break;
 		default:
 			break;
 	}
 
-
-	if (count < PAGE_SIZE) {
+	if (count < CACHE_SIZE) {
 		memcpy(pmsg, buf, count);
 		*psize = count;
 		ret_cnt = count;
 	} else {
-		memcpy(pmsg, buf, PAGE_SIZE);
-		*psize = PAGE_SIZE;
-		ret_cnt = count - PAGE_SIZE;
+		memcpy(pmsg, buf, CACHE_SIZE);
+		*psize = CACHE_SIZE;
+		ret_cnt = count - CACHE_SIZE;
 	}
 
 	convert_to_lowercase(pmsg, *psize);
@@ -234,6 +301,9 @@ static int __init mod_init(void)
 				goto fail;
 			pool_mem = mempool_create_slab_pool(POOL_HOT_RESERV, slab_mem);
 			break;
+		case RESIZABLE_MODE:
+
+			break;
 		default:
 			break;
 	}
@@ -260,6 +330,7 @@ static void __exit mod_exit(void)
 			break;
 		case SLAB_MODE_WITH_PRESERVE:
 		case POOL_MODE:
+		case RESIZABLE_MODE:
 			if (!list_empty(&buffers_list)) {
 				list_for_each_entry_reverse(node, &buffers_list, list) {
 					if (node->buffer) {
@@ -271,7 +342,7 @@ static void __exit mod_exit(void)
 					kfree(node);
 				}
 			}
-			if (mode == POOL_MODE)
+			if (mode != SLAB_MODE_WITH_PRESERVE)
 				mempool_destroy(pool_mem);
 			break;
 	
