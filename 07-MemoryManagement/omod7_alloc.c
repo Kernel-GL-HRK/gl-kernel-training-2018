@@ -256,6 +256,7 @@ static int __init omod_init(void)
 	attr_class = class_create(THIS_MODULE, SysFS_DIR_NAME);
 	if (attr_class == NULL) {
 		pr_err("omod7: error creating sysfs class\n");
+		kmem_cache_destroy(pmycache);
 		return -EEXIST;
 	}
 
@@ -263,6 +264,7 @@ static int __init omod_init(void)
 	if (ret) {
 		pr_err("omod7: error creating sysfs class attribute\n");
 		class_destroy(attr_class);
+		kmem_cache_destroy(pmycache);
 		return ret;
 	}
 
@@ -271,6 +273,7 @@ static int __init omod_init(void)
 		pr_err("omod7: error creating sysfs class stat attribute\n");
 		class_remove_file(attr_class, &class_attr_tolower);
 		class_destroy(attr_class);
+		kmem_cache_destroy(pmycache);
 		return ret;
 	}
 
@@ -283,6 +286,9 @@ static void __exit omod_exit(void)
 	class_remove_file(attr_class, &class_attr_stat);
 	class_remove_file(attr_class, &class_attr_tolower);
 	class_destroy(attr_class);
+
+	FreeAllFragments();
+	kmem_cache_destroy(pmycache);
 
 	pr_info("omod7 SysFS ToLower normal shutdown.\n");
 }
