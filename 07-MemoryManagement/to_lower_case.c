@@ -9,9 +9,9 @@
 #include <linux/sysfs.h>
 #include <linux/device.h>
 #include <linux/list.h>
+#include <linux/mempool.h>
 
 #define MODULE_TAG			"LowerCase"
-
 #define CLASS_NAME			"case_converter"
 
 static unsigned long int mode;
@@ -38,12 +38,14 @@ static struct buffers_list_node *last_readed;
 static char *msg_buffer;
 static int msg_size;
 
+#define POOL_HOT_RESERV  3
 #define CACHE_SIZE PAGE_SIZE
 /*Memmory allocation types*/
 #define SLAB_MODE 0
 #define SLAB_MODE_WITH_PRESERVE 1 
+#define POOL_MODE 2
 static struct kmem_cache *slab_mem;
-
+static mempool_t *pool_mem;
 
 static void convert_to_lowercase(char *buf, int len)
 {
@@ -115,6 +117,7 @@ static ssize_t buffer_show(struct class *class, struct class_attribute *attr, ch
 			msg_buffer = NULL;
 			break;
 		case SLAB_MODE_WITH_PRESERVE:
+		case POOL_MODE:
 			if (list_empty(&buffers_list)) {
 				return 0;
 			}
@@ -150,8 +153,12 @@ static ssize_t buffer_store(struct class *class, struct class_attribute *attr, c
 			}
 			break;
 		case SLAB_MODE_WITH_PRESERVE:
+		case POOL_MODE:
 			blnode = kzalloc(sizeof(struct buffers_list_node), GFP_KERNEL);
-			blnode->buffer = kmem_cache_alloc(slab_mem, GFP_KERNEL);
+			if(mode == SLAB_MODE_WITH_PRESERVE)
+				blnode->buffer = kmem_cache_alloc(slab_mem, GFP_KERNEL);
+			else
+				blnode->buffer = mempool_alloc(pool_mem, GFP_KERNEL);
 			list_add_tail(&blnode->list, &buffers_list);
 			pmsg = blnode->buffer;
 			psize = &blnode->len;
@@ -221,6 +228,12 @@ static int __init mod_init(void)
 			if (slab_mem == NULL)
 				goto fail;
 			break;
+		case POOL_MODE:
+			slab_mem = kmem_cache_create(MODULE_TAG, CACHE_SIZE, 0, SLAB_HWCACHE_ALIGN | SLAB_POISON, NULL);
+			if (slab_mem == NULL)
+				goto fail;
+			pool_mem = mempool_create_slab_pool(POOL_HOT_RESERV, slab_mem);
+			break;
 		default:
 			break;
 	}
@@ -246,13 +259,20 @@ static void __exit mod_exit(void)
 			}
 			break;
 		case SLAB_MODE_WITH_PRESERVE:
+		case POOL_MODE:
 			if (!list_empty(&buffers_list)) {
 				list_for_each_entry_reverse(node, &buffers_list, list) {
-					if (node->buffer)
-						kmem_cache_free(slab_mem, node->buffer);
+					if (node->buffer) {
+						if (mode == SLAB_MODE_WITH_PRESERVE)
+							kmem_cache_free(slab_mem, node->buffer);
+						else
+							mempool_free(node->buffer, pool_mem);
+					}
 					kfree(node);
 				}
 			}
+			if (mode == POOL_MODE)
+				mempool_destroy(pool_mem);
 			break;
 	
 		default:
