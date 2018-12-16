@@ -213,7 +213,15 @@ static int mpu6050_probe(struct i2c_client *client, const struct i2c_device_id *
 	}
 
 	mpu6050_dev->client = client;
-	mpu6050_dev->irq_gpio_num = 6;
+
+	mpu6050_dev->irq_gpio_num = of_get_named_gpio(client->dev.of_node, "mpu6050-int-gpio", 0);
+	if (!gpio_is_valid(mpu6050_dev->irq_gpio_num))
+        {
+        dev_err(&client->dev, "No pin available\n");
+		ret = -EBUSY;
+		goto fail1;
+        }
+
 	mpu6050_dev->irq_num = gpio_to_irq(mpu6050_dev->irq_gpio_num);
 
     ret = devm_gpio_request_one(&client->dev, mpu6050_dev->irq_gpio_num, 
@@ -260,6 +268,12 @@ static int mpu6050_remove(struct i2c_client *client)
 	return 0;
 }
 
+static const struct of_device_id mpu6050_of_match[] = {
+	{ .compatible = "mpu6050"},
+	{ }
+};
+MODULE_DEVICE_TABLE(of, mpu6050_of_match);
+
 static const struct i2c_device_id mpu6050_id[] =
     {
     	{ "mpu6050", 0 },
@@ -274,9 +288,9 @@ static struct i2c_driver mpu6050_driver = {
 	.remove		= mpu6050_remove,
 	.id_table	= mpu6050_id,
 };
-//module_i2c_driver(mpu6050_driver);
+module_i2c_driver(mpu6050_driver);
 
-
+/*
 static int mpu6050_module_init(void)
 {
 	int ret;
@@ -293,7 +307,7 @@ static void mpu6050_module_exit(void)
 
 module_init(mpu6050_module_init);
 module_exit(mpu6050_module_exit);
-
+*/
 
 MODULE_LICENSE("GPL");
 MODULE_DESCRIPTION("Alternative mpu6050 driver");
