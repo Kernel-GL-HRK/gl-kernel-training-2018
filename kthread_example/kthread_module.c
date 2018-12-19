@@ -6,17 +6,16 @@
 #include <linux/timer.h>
 #include <linux/delay.h>
 
-#define KTHREAD_RUN 0
+#define N_THR 4
 
-static struct task_struct *thread1;
+static struct task_struct *threads[N_THR];
 
 static int thread_fn(void *ptr)
 {
-	pr_info("Kthread example: in thread1\n");
 
 	while (!kthread_should_stop()) {
-		schedule();
-		set_current_state(TASK_INTERRUPTIBLE);
+		pr_info("Kthread example: in thread %d\n", (int)ptr);
+		msleep_interruptible(1000);
 	}
 
 	return 0;
@@ -24,18 +23,14 @@ static int thread_fn(void *ptr)
 
 int thread_init(void)
 {
-	char our_thread[8] = "thread1";
+	char thread_format[] = "thread %d";
+	int i;
 
 	pr_info("Kthread example: in init\n");
-#if KTHREAD_RUN
-	thread1 = kthread_run(thread_fn, NULL, our_thread);
-#else
-	thread1 = kthread_create(thread_fn, NULL, our_thread);
-	if ((thread1))
-		wake_up_process(thread1);
-#endif
-	if ((thread1))
-		pr_info("Kthread example: kthread created\n");
+
+	for (i = 0; i < N_THR; i++)
+		threads[i] = kthread_run(thread_fn, 
+                                (void *)i, thread_format, i);
 
 	return 0;
 }
@@ -43,11 +38,17 @@ int thread_init(void)
 void thread_cleanup(void)
 {
 	int ret = 1;
+	int i;
 
-	ret = kthread_stop(thread1);
+	for (i = 0; i < N_THR; i++) {
+		if (threads[i]) {
 
-	if (!ret)
-		pr_info("Kthread example: thread stopped\n");
+			ret = kthread_stop(threads[i]);
+
+			if (!ret)
+				pr_info("Kthread example: thread %d stopped\n", i);
+		}
+	}
 }
 
 module_init(thread_init);
