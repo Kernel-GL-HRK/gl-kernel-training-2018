@@ -5,17 +5,23 @@
 #include <linux/time.h>
 #include <linux/timer.h>
 #include <linux/delay.h>
+#include <linux/spinlock.h>
 
 #define N_THR 4
 
 static struct task_struct *threads[N_THR];
+
+DEFINE_SPINLOCK(critical_section);
 
 static int thread_fn(void *ptr)
 {
 
 	while (!kthread_should_stop()) {
 		pr_info("Kthread example: in thread %d\n", (int)ptr);
-		msleep_interruptible(1000);
+                spin_lock(&critical_section);
+                msleep_interruptible(200);
+                spin_unlock(&critical_section);
+		msleep_interruptible(800);
 	}
 
 	return 0;
@@ -47,6 +53,7 @@ void thread_cleanup(void)
 
 			if (!ret)
 				pr_info("Kthread example: thread %d stopped\n", i);
+
 		}
 	}
 }
