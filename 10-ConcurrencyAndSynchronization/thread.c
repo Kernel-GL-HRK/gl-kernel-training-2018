@@ -19,7 +19,7 @@ MODULE_PARM_DESC(Twork, "Delay time. Default 5 sec");
 
 static int threadnum = 3;
 module_param(threadnum, int, 0444);
-MODULE_PARM_DESC(threadnum, "Number of threads. Default 1");
+MODULE_PARM_DESC(threadnum, "Number of threads. Default 3");
 
 struct thread_list_node {
 	struct task_struct *task;
@@ -27,14 +27,21 @@ struct thread_list_node {
 };
 static LIST_HEAD(threads_list);
 
+DEFINE_SPINLOCK(lock);
 
 static int thrad_func(void *data)
 {
-	char task_name[TASK_COMM_LEN];
+	static char task_name[TASK_COMM_LEN];
 
 	while(!kthread_should_stop()){
+		if(spin_is_locked(&lock)){
+			pr_debug("Spinlock is locked...wait\n");
+		}
+		spin_lock(&lock);
 		get_task_comm(task_name, current);
 		pr_debug("Hello! from %s\n", task_name);
+		spin_unlock(&lock);
+
 		ssleep(1);
 	}
 	return 0;
