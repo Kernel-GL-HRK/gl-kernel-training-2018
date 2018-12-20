@@ -5,49 +5,87 @@
 #include <linux/kernel.h>
 #include <linux/kthread.h>
 #include <linux/delay.h>
+#include <linux/slab.h>
+#include <linux/list.h>
 
 #define MODULE_TAG "threadmodule"
 
 //Different ways to create a thread
 #define CREATE_THREAD_EASY
 
-static int param = 5;
-module_param(param, int, 0444);
-MODULE_PARM_DESC(param, "Delay time. Default 5 sec");
+static int Twork = 5;
+module_param(Twork, int, 0444);
+MODULE_PARM_DESC(Twork, "Delay time. Default 5 sec");
+
+static int threadnum = 3;
+module_param(threadnum, int, 0444);
+MODULE_PARM_DESC(threadnum, "Number of threads. Default 1");
+
+struct thread_list_node {
+	struct task_struct *task;
+	struct list_head list;
+};
+static LIST_HEAD(threads_list);
+
 
 static int thrad_func(void *data)
 {
-	ssleep(2);
+	char task_name[TASK_COMM_LEN];
+
+	while(!kthread_should_stop()){
+		get_task_comm(task_name, current);
+		pr_debug("Hello! from %s\n", task_name);
+		ssleep(1);
+	}
 	return 0;
 }
 
 static int __init tmod_init(void)
 {
-	struct task_struct *task; 
+	int ret = 0;
 	char task_name[TASK_COMM_LEN];
 	static int tnum = 0;
+	struct thread_list_node *tlistnode;
 	pr_debug("Loading %s\n", MODULE_TAG);
 
-#ifdef CREATE_THREAD_EASY
-	task = kthread_run(thrad_func, NULL, "%d:thread_%d", current->pid, tnum++);	
-#else
-	task = kthread_create(thrad_func, NULL, "%d:thread_%d", current->pid, tnum++);
-	if(!IS_ERR(task)){
-		wake_up_process(task);
+	for(tnum = 0; tnum < threadnum; tnum++) {
+		tlistnode = kzalloc(sizeof(struct thread_list_node), GFP_KERNEL);
+		if(!tlistnode){
+			ret = -ENOMEM;
+			goto err;
+		}
+		tlistnode->task = kthread_run(thrad_func, NULL, "%d:thread_%d", current->pid, tnum);
+		if(IS_ERR(tlistnode->task)){
+			ret = PTR_ERR(tlistnode->task);
+			kfree(tlistnode);
+			goto err;
+		}
+		list_add_tail(&tlistnode->list, &threads_list);
+
+		get_task_comm(task_name, tlistnode->task);
+		pr_debug("Task %s is running\n", task_name);
 	}
-#endif
 
-	if(IS_ERR(task)){
-		return PTR_ERR(task);
+	ssleep(Twork);
+
+	if (!list_empty(&threads_list)) {
+        list_for_each_entry(tlistnode, &threads_list, list) {
+          kthread_stop(tlistnode->task);
+		  get_task_comm(task_name, tlistnode->task);
+		  pr_debug("Task %s is stopped\n", task_name);
+        }
 	}
-
-	get_task_comm(task_name, task);
-	pr_debug("Task %s is running\n", task_name);
-
-	ssleep(3);
 
 	pr_debug("%s loaded\n", MODULE_TAG);
 	return 0;
+err:
+	if (!list_empty(&threads_list)) {
+        list_for_each_entry(tlistnode, &threads_list, list) {
+          kfree(tlistnode);
+        }
+	}
+	pr_debug("%s exit with error %d\n", MODULE_TAG, ret);
+	return ret;
 }
 
 
@@ -55,6 +93,14 @@ static int __init tmod_init(void)
 
 static void __exit tmod_exit(void)
 {
+	struct thread_list_node *tlistnode;
+
+	if (!list_empty(&threads_list)) {
+        list_for_each_entry(tlistnode, &threads_list, list) {
+          kfree(tlistnode);
+        }
+	}
+
 	pr_debug("Test module unloaded\n");
 }
 
