@@ -7,6 +7,7 @@
 #include <linux/delay.h>
 #include <linux/slab.h>
 #include <linux/list.h>
+#include <linux/rtmutex.h>
 
 #define MODULE_TAG "threadmodule"
 
@@ -27,20 +28,21 @@ struct thread_list_node {
 };
 static LIST_HEAD(threads_list);
 
-DEFINE_SPINLOCK(lock);
+DEFINE_RT_MUTEX(mutex);
 
 static int thrad_func(void *data)
 {
 	static char task_name[TASK_COMM_LEN];
 
 	while(!kthread_should_stop()){
-		if(spin_is_locked(&lock)){
-			pr_debug("Spinlock is locked...wait\n");
+		if(rt_mutex_is_locked(&mutex)){
+			pr_debug("RT Mutex is locked...wait\n");
 		}
-		spin_lock(&lock);
+
+		rt_mutex_lock(&mutex);
 		get_task_comm(task_name, current);
 		pr_debug("Hello! from %s\n", task_name);
-		spin_unlock(&lock);
+		rt_mutex_unlock(&mutex);
 
 		ssleep(1);
 	}
