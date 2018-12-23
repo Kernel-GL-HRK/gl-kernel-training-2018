@@ -4,6 +4,7 @@
 #include <linux/delay.h>
 #include <linux/vmalloc.h>
 #include <linux/timer.h>
+#include <linux/spinlock.h>
 
 #define LOG(str) pr_info(__FILE__": "str"\n");
 
@@ -21,9 +22,16 @@ static int stop_flag = 0;
 
 int th_fun(void *data)
 {
+	static DEFINE_SPINLOCK(xxx_lock);
+	unsigned long flags;
+
 	LOG("thread start");
 	while( !kthread_should_stop() && !stop_flag ) {
+
+		spin_lock_irqsave(&xxx_lock, flags);
 		LOG("log");
+		spin_unlock_irqrestore(&xxx_lock, flags);
+
 		msleep(1000);
 	}
 	LOG("thread end");
