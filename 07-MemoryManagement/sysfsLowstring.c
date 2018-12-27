@@ -5,13 +5,16 @@
 #include <linux/ctype.h>
 #include <linux/slab.h>
 #include <linux/list.h>
+#include <linux/mempool.h>
 
+#define POOL_MINIMUM_NUM	2
 
 struct msgNode{
 	struct list_head	list;
 	char 			msg[PAGE_SIZE];
 };
 static struct kmem_cache	*cachep;
+static mempool_t 		*pool;
 static struct msgNode 		msgList;
 
 
@@ -38,7 +41,7 @@ int msg_release_items(struct msgNode *const msgList)
 	list_for_each_safe(ptr, next, &msgList->list){
 		entry = list_entry(ptr, struct msgNode, list);
 		list_del(&entry->list);
-		kmem_cache_free(cachep, entry);
+		mempool_free(entry, pool);
 	}
 	return 0;
 }
@@ -52,14 +55,12 @@ static ssize_t converter_show(struct class *class, struct class_attribute *attr,
 		entry = list_last_entry(&msgList.list, struct msgNode, list);
 		strcpy(buf, entry->msg);
 		list_del(&entry->list);
-		kmem_cache_free(cachep, entry);
+		mempool_free(entry, pool);
 	}
 
 	++stats.numcallShow;
 	return strlen(buf);
 }
-
-
 
 int strToLower(const char *const input, char *const output)
 {
@@ -86,7 +87,8 @@ int strToLower(const char *const input, char *const output)
 static ssize_t converter_store(struct class *class, struct class_attribute *attr, const char *buf, size_t count)
 {
 
-	struct msgNode *newMsgNode = (struct msgNode *)kmem_cache_alloc(cachep, GFP_KERNEL);	
+	struct msgNode *newMsgNode = (struct msgNode *)mempool_alloc(pool, GFP_KERNEL);	
+							
 	if (NULL == newMsgNode) {
 		pr_err("mymodule: error msg reserve item\n");
 	} else {
@@ -141,10 +143,10 @@ static int mymodule_init(void)
 		return ret;
 	}
 
-
 	ret = class_create_file(attr_class, &class_attr_stat);
 	if (ret) {
 		pr_err("mymodule: error creating sysfs class attribute\n");
+		class_remove_file(attr_class, &class_attr_converter);
 		class_destroy(attr_class);
 		return ret;
 	}
@@ -158,6 +160,21 @@ static int mymodule_init(void)
 
 	if (NULL == cachep) {
 		pr_err("Error creating cache \n");
+		class_remove_file(attr_class, &class_attr_stat);
+		class_remove_file(attr_class, &class_attr_converter);
+		class_destroy(attr_class);
+		return -ENOMEM;
+	}
+
+	pool = mempool_create(POOL_MINIMUM_NUM,  mempool_alloc_slab,
+	    mempool_free_slab, cachep);
+
+	if (NULL == pool){
+		pr_err("Error creating mem pool \n");
+		kmem_cache_destroy(cachep);
+		class_remove_file(attr_class, &class_attr_stat);
+		class_remove_file(attr_class, &class_attr_converter);
+		class_destroy(attr_class);
 		return -ENOMEM;
 	}
 
@@ -170,6 +187,7 @@ static void mymodule_exit(void)
 {
 	
 	msg_release_items(&msgList);
+	mempool_destroy(pool);
 	kmem_cache_destroy(cachep);
 
 	class_remove_file(attr_class, &class_attr_converter);
@@ -183,6 +201,6 @@ module_init(mymodule_init);
 module_exit(mymodule_exit);
 
 MODULE_AUTHOR("Roman.Nikishyn <rnikishyn@yahoo.com>");
-MODULE_DESCRIPTION("MemoryManagement.Part2");
+MODULE_DESCRIPTION("MemoryManagement.Part 3");
 MODULE_LICENSE("GPL");
 MODULE_VERSION("0.1");
