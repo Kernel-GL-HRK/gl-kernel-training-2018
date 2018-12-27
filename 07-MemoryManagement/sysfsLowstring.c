@@ -4,14 +4,15 @@
 #include <linux/err.h>
 #include <linux/ctype.h>
 #include <linux/slab.h>
+#include <linux/list.h>
 
 
-struct slabMsgType{
-	struct 	kmem_cache 	*cachep;
-	char 			*string;
+struct msgNode{
+	struct list_head	list;
+	char 			msg[PAGE_SIZE];
 };
-
-static struct slabMsgType slabAllocMsg;
+static struct kmem_cache	*cachep;
+static struct msgNode 		msgList;
 
 
 struct usageStatistic{
@@ -23,80 +24,78 @@ static struct usageStatistic stats;
 
 
 
-void msg_release_items(struct slabMsgType *const msg)
-{
-	if (NULL == msg)
-		return;
-
-	if (NULL != msg->string)
-		kmem_cache_free(msg->cachep, msg->string);
-
-	if (NULL != msg->cachep)
-		kmem_cache_destroy(msg->cachep);
-}
-
-static signed int msg_reserve_items(size_t size, struct slabMsgType *const msg)
+int msg_release_items(struct msgNode *const msgList)
 {
 	
-	if (NULL == msg)
+
+	struct list_head 	*ptr 	= NULL;
+	struct list_head 	*next 	= NULL;
+	struct msgNode 		*entry 	= NULL;
+
+	if (NULL == msgList)
 		return EINVAL;
-	
-	msg_release_items(msg);
 
-	msg->cachep = kmem_cache_create("msg_cachep",
-					size,
-					0,
-					SLAB_HWCACHE_ALIGN,
-					NULL);
-
-	if (NULL == msg->cachep) {
-		pr_err("Error creating cache \n");
-		return -ENOMEM;
+	list_for_each_safe(ptr, next, &msgList->list){
+		entry = list_entry(ptr, struct msgNode, list);
+		list_del(&entry->list);
+		kmem_cache_free(cachep, entry);
 	}
-
-	msg->string = (char *)kmem_cache_alloc(msg->cachep,GFP_KERNEL);
-	
-	if (NULL == msg->string) {
-		pr_err("Error allocating from cache \n");
-		kmem_cache_destroy(msg->cachep);
-		return -ENOMEM;
-	}
-
 	return 0;
 }
 
 static ssize_t converter_show(struct class *class, struct class_attribute *attr, char *buf)
 {
-	if (slabAllocMsg.string) {
-		strcpy(buf, slabAllocMsg.string);
-		slabAllocMsg.string[0] = '\0';	
+	struct msgNode 		*entry 	= NULL;
+	int isEmpty = list_empty(&msgList.list);
+	
+	if (isEmpty == 0) {
+		entry = list_last_entry(&msgList.list, struct msgNode, list);
+		strcpy(buf, entry->msg);
+		list_del(&entry->list);
+		kmem_cache_free(cachep, entry);
 	}
 
 	++stats.numcallShow;
 	return strlen(buf);
 }
 
-static ssize_t converter_store(struct class *class, struct class_attribute *attr, const char *buf, size_t count)
+
+
+int strToLower(const char *const input, char *const output)
 {
 	int index = 0;
 	char character;
-
-	int ret = msg_reserve_items(count, &slabAllocMsg); 
-
-	if (!ret) {
-		//Convert input string to lower
-		while (buf[index]) {
-			character = buf[index];
-			slabAllocMsg.string[index] = (char)tolower(character);
-			++index;
-			++stats.convertedCharacters;
-		}
-
-		//Copy end of line character
-		slabAllocMsg.string[index] = buf[index];
+	int numCharactersConverted = 0;
+	
+	if ((NULL == input) || (NULL == output))
+		return -EINVAL;
+	
+	//Convert input string to lower
+	while (input[index]) {
+		character = input[index];
+		output[index] = (char)tolower(character);
+		++index;
+		++numCharactersConverted;
 	}
-	else { 
+
+	//Copy end of line character
+	output[index] = input[index];
+	return numCharactersConverted;
+}
+
+static ssize_t converter_store(struct class *class, struct class_attribute *attr, const char *buf, size_t count)
+{
+
+	struct msgNode *newMsgNode = (struct msgNode *)kmem_cache_alloc(cachep, GFP_KERNEL);	
+	if (NULL == newMsgNode) {
 		pr_err("mymodule: error msg reserve item\n");
+	} else {
+
+		int ret = strToLower(buf, newMsgNode->msg);
+		if (ret >= 0) {
+			stats.convertedCharacters += ret;
+			list_add_tail(&newMsgNode->list, &msgList.list);
+		}
 	}
 
 	return count;
@@ -150,6 +149,19 @@ static int mymodule_init(void)
 		return ret;
 	}
 
+	INIT_LIST_HEAD(&msgList.list);
+
+	cachep = kmem_cache_create("msg_cachep", sizeof(struct msgNode),
+						0,
+						SLAB_HWCACHE_ALIGN,
+						NULL);
+
+	if (NULL == cachep) {
+		pr_err("Error creating cache \n");
+		return -ENOMEM;
+	}
+
+
 	pr_info("mymodule: module loaded\n");
 	return 0;
 }
@@ -157,7 +169,8 @@ static int mymodule_init(void)
 static void mymodule_exit(void)
 {
 	
-	msg_release_items(&slabAllocMsg);
+	msg_release_items(&msgList);
+	kmem_cache_destroy(cachep);
 
 	class_remove_file(attr_class, &class_attr_converter);
 	class_remove_file(attr_class, &class_attr_stat);
@@ -170,6 +183,6 @@ module_init(mymodule_init);
 module_exit(mymodule_exit);
 
 MODULE_AUTHOR("Roman.Nikishyn <rnikishyn@yahoo.com>");
-MODULE_DESCRIPTION("Dynamically allocate memory(use SLAB allo).Part1");
+MODULE_DESCRIPTION("MemoryManagement.Part2");
 MODULE_LICENSE("GPL");
 MODULE_VERSION("0.1");
