@@ -11,8 +11,15 @@
 
 #include "mpu6050-regs.h"
 
+#define FILT_ORDER 4
+
 struct mpu6050_data {
 	struct i2c_client *drv_client;
+	int accel_values_raw[3][FILT_ORDER];
+	int gyro_values_raw[3][FILT_ORDER];
+
+	int raw_store_idx;
+
 	int accel_values[3];
 	int gyro_values[3];
 	int temperature;
@@ -34,14 +41,21 @@ static int mpu6050_read_data(void)
 	if (drv_client == 0)
 		return -ENODEV;
 
+	int store_pos = g_mpu6050_data.raw_store_idx;
 	/* accel */
-	g_mpu6050_data.accel_values[0] = (s16)((u16)i2c_smbus_read_word_swapped(drv_client, REG_ACCEL_XOUT_H));
-	g_mpu6050_data.accel_values[1] = (s16)((u16)i2c_smbus_read_word_swapped(drv_client, REG_ACCEL_YOUT_H));
-	g_mpu6050_data.accel_values[2] = (s16)((u16)i2c_smbus_read_word_swapped(drv_client, REG_ACCEL_ZOUT_H));
+	g_mpu6050_data.accel_values_raw[0][store_pos]
+			= (s16)((u16)i2c_smbus_read_word_swapped(drv_client, REG_ACCEL_XOUT_H));
+	g_mpu6050_data.accel_values_raw[1][store_pos]
+			= (s16)((u16)i2c_smbus_read_word_swapped(drv_client, REG_ACCEL_YOUT_H));
+	g_mpu6050_data.accel_values_raw[2][store_pos]
+			= (s16)((u16)i2c_smbus_read_word_swapped(drv_client, REG_ACCEL_ZOUT_H));
 	/* gyro */
-	g_mpu6050_data.gyro_values[0] = (s16)((u16)i2c_smbus_read_word_swapped(drv_client, REG_GYRO_XOUT_H));
-	g_mpu6050_data.gyro_values[1] = (s16)((u16)i2c_smbus_read_word_swapped(drv_client, REG_GYRO_YOUT_H));
-	g_mpu6050_data.gyro_values[2] = (s16)((u16)i2c_smbus_read_word_swapped(drv_client, REG_GYRO_ZOUT_H));
+	g_mpu6050_data.gyro_values_raw[0][store_pos]
+			= (s16)((u16)i2c_smbus_read_word_swapped(drv_client, REG_GYRO_XOUT_H));
+	g_mpu6050_data.gyro_values_raw[1][store_pos]
+			= (s16)((u16)i2c_smbus_read_word_swapped(drv_client, REG_GYRO_YOUT_H));
+	g_mpu6050_data.gyro_values_raw[2][store_pos]
+			= (s16)((u16)i2c_smbus_read_word_swapped(drv_client, REG_GYRO_ZOUT_H));
 	/* Temperature in degrees C =
 	 * (TEMP_OUT Register Value  as a signed quantity)/340 + 36.53
 	 */
@@ -51,9 +65,36 @@ static int mpu6050_read_data(void)
 	return 0;
 }
 
+static void mpu6050_filter_accel_gyro_data(void)
+{
+	int axis;
+	int i;
+
+	for (axis = 0; axis < 3; axis++) {
+		int sum = 0; 
+		for (i = 0; i < FILT_ORDER; i++)
+			sum += g_mpu6050_data.accel_values_raw[axis][i];
+
+		g_mpu6050_data.accel_values[axis] = sum/FILT_ORDER;
+	}
+
+	for (axis = 0; axis < 3; axis++) {
+		int sum = 0; 
+		for (i = 0; i < FILT_ORDER; i++)
+			sum += g_mpu6050_data.gyro_values_raw[axis][i];
+
+		g_mpu6050_data.gyro_values[axis] = sum/FILT_ORDER;
+	}
+}
+
 static void mpu_irq_work(struct work_struct *work)
 {
 	mpu6050_read_data();
+
+	g_mpu6050_data.raw_store_idx++;
+	g_mpu6050_data.raw_store_idx = g_mpu6050_data.raw_store_idx % FILT_ORDER;
+
+	mpu6050_filter_accel_gyro_data();
 }
 
 DECLARE_WORK(read_filter_work, mpu_irq_work);
