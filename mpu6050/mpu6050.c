@@ -7,6 +7,7 @@
 #include <linux/i2c-dev.h>
 #include <linux/gpio/consumer.h>
 #include <linux/interrupt.h>
+#include <linux/workqueue.h>
 
 #include "mpu6050-regs.h"
 
@@ -23,15 +24,7 @@ static int irq_num;
 
 static struct mpu6050_data g_mpu6050_data;
 
-
-static irqreturn_t mpu_irq(int irq, void *dev_id)
-{
-	struct i2c_client *drv_client = g_mpu6050_data.drv_client;
-
-	dev_info(&drv_client->dev, "IRQ!\n");
-
-	return IRQ_HANDLED;
-}
+static struct workqueue_struct *reader_wq;
 
 static int mpu6050_read_data(void)
 {
@@ -55,19 +48,25 @@ static int mpu6050_read_data(void)
 	temp = (s16)((u16)i2c_smbus_read_word_swapped(drv_client, REG_TEMP_OUT_H));
 	g_mpu6050_data.temperature = (temp + 12420 + 170) / 340;
 
-	dev_info(&drv_client->dev, "sensor data read:\n");
-	dev_info(&drv_client->dev, "ACCEL[X,Y,Z] = [%d, %d, %d]\n",
-		g_mpu6050_data.accel_values[0],
-		g_mpu6050_data.accel_values[1],
-		g_mpu6050_data.accel_values[2]);
-	dev_info(&drv_client->dev, "GYRO[X,Y,Z] = [%d, %d, %d]\n",
-		g_mpu6050_data.gyro_values[0],
-		g_mpu6050_data.gyro_values[1],
-		g_mpu6050_data.gyro_values[2]);
-	dev_info(&drv_client->dev, "TEMP = %d\n",
-		g_mpu6050_data.temperature);
-
 	return 0;
+}
+
+static void mpu_irq_work(struct work_struct *work)
+{
+	mpu6050_read_data();
+}
+
+DECLARE_WORK(read_filter_work, mpu_irq_work);
+
+static irqreturn_t mpu_irq(int irq, void *dev_id)
+{
+	struct i2c_client *drv_client = g_mpu6050_data.drv_client;
+
+	if (!queue_work(reader_wq, &read_filter_work)) {
+		dev_err(&drv_client->dev, "Unable to queue work: already on queue\n");
+	}
+
+	return IRQ_HANDLED;
 }
 
 static int mpu6050_probe(struct i2c_client *drv_client,
@@ -133,7 +132,7 @@ static int mpu6050_probe(struct i2c_client *drv_client,
 	i2c_smbus_write_byte_data(drv_client, REG_CONFIG, CONF_DLPF_CFG_4);
 	i2c_smbus_write_byte_data(drv_client, REG_GYRO_CONFIG, GCON_FCHOICE_DLPF_EN);
 	i2c_smbus_write_byte_data(drv_client, REG_SAMPLERATE_DIV, 7);
-	
+
 	i2c_smbus_write_byte_data(drv_client, REG_INT_PIN_CFG,
 								INT_PIN_CFG_ACTIVE_LOW |
 								INT_PIN_CFG_STATUS_READ_CLEAR);
@@ -175,7 +174,6 @@ static struct i2c_driver mpu6050_i2c_driver = {
 static ssize_t accel_x_show(struct class *class,
 			    struct class_attribute *attr, char *buf)
 {
-	mpu6050_read_data();
 	sprintf(buf, "%d\n", g_mpu6050_data.accel_values[0]);
 	return strlen(buf);
 }
@@ -183,7 +181,6 @@ static ssize_t accel_x_show(struct class *class,
 static ssize_t accel_y_show(struct class *class,
 			    struct class_attribute *attr, char *buf)
 {
-	mpu6050_read_data();
 	sprintf(buf, "%d\n", g_mpu6050_data.accel_values[1]);
 	return strlen(buf);
 }
@@ -191,7 +188,6 @@ static ssize_t accel_y_show(struct class *class,
 static ssize_t accel_z_show(struct class *class,
 			    struct class_attribute *attr, char *buf)
 {
-	mpu6050_read_data();
 	sprintf(buf, "%d\n", g_mpu6050_data.accel_values[2]);
 	return strlen(buf);
 }
@@ -199,7 +195,6 @@ static ssize_t accel_z_show(struct class *class,
 static ssize_t gyro_x_show(struct class *class,
 			   struct class_attribute *attr, char *buf)
 {
-	mpu6050_read_data();
 	sprintf(buf, "%d\n", g_mpu6050_data.gyro_values[0]);
 	return strlen(buf);
 }
@@ -207,7 +202,6 @@ static ssize_t gyro_x_show(struct class *class,
 static ssize_t gyro_y_show(struct class *class,
 			   struct class_attribute *attr, char *buf)
 {
-	mpu6050_read_data();
 	sprintf(buf, "%d\n", g_mpu6050_data.gyro_values[1]);
 	return strlen(buf);
 }
@@ -215,7 +209,6 @@ static ssize_t gyro_y_show(struct class *class,
 static ssize_t gyro_z_show(struct class *class,
 			   struct class_attribute *attr, char *buf)
 {
-	mpu6050_read_data();
 	sprintf(buf, "%d\n", g_mpu6050_data.gyro_values[2]);
 	return strlen(buf);
 }
@@ -223,7 +216,6 @@ static ssize_t gyro_z_show(struct class *class,
 static ssize_t temperature_show(struct class *class,
 			 struct class_attribute *attr, char *buf)
 {
-	mpu6050_read_data();
 	sprintf(buf, "%d\n", g_mpu6050_data.temperature);
 	return strlen(buf);
 }
@@ -302,6 +294,8 @@ static int mpu6050_init(void)
 		return ret;
 	}
 
+	reader_wq = alloc_workqueue("MPU READER", WQ_HIGHPRI, 2);
+
 	pr_info("mpu6050: sysfs class attributes created\n");
 
 	pr_info("mpu6050: module loaded\n");
@@ -323,6 +317,9 @@ static void mpu6050_exit(void)
 		class_destroy(attr_class);
 		pr_info("mpu6050: sysfs class destroyed\n");
 	}
+
+	cancel_work_sync(&read_filter_work);
+	destroy_workqueue(reader_wq);
 
 	i2c_del_driver(&mpu6050_i2c_driver);
 	pr_info("mpu6050: i2c driver deleted\n");
