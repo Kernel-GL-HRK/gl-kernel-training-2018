@@ -5,9 +5,10 @@
 #include <linux/i2c.h>
 #include <linux/timer.h>
 #include <linux/i2c-dev.h>
+#include <linux/gpio/consumer.h>
+#include <linux/interrupt.h>
 
 #include "mpu6050-regs.h"
-
 
 struct mpu6050_data {
 	struct i2c_client *drv_client;
@@ -16,7 +17,21 @@ struct mpu6050_data {
 	int temperature;
 };
 
+static struct gpio_desc *irq_line;
+
+static int irq_num;
+
 static struct mpu6050_data g_mpu6050_data;
+
+
+static irqreturn_t mpu_irq(int irq, void *dev_id)
+{
+	struct i2c_client *drv_client = g_mpu6050_data.drv_client;
+
+	dev_info(&drv_client->dev, "IRQ!\n");
+
+	return IRQ_HANDLED;
+}
 
 static int mpu6050_read_data(void)
 {
@@ -81,19 +96,48 @@ static int mpu6050_probe(struct i2c_client *drv_client,
 		"i2c mpu6050 device found, WHO_AM_I register value = 0x%X\n",
 		ret);
 
+	irq_line = gpiod_get(&drv_client->dev, "int", GPIOD_IN);
+
+	gpiod_direction_input(irq_line);
+
+	if (IS_ERR(irq_line)) {
+		dev_err(&drv_client->dev, "unable to retreive IRQ GPIO descriptor\n");
+		return -1;
+	}
+
+	irq_num = gpiod_to_irq(irq_line);
+
+	if (irq_num < 0) {
+		dev_err(&drv_client->dev, "unable to receive IRQ for given GPIO\n");
+		return -1;
+	}
+
+	if (request_irq(irq_num, mpu_irq, IRQF_TRIGGER_FALLING, "mpu6050", &drv_client)) {
+		dev_err(&drv_client->dev, "request IRQ failed\n");
+		return -1;
+	}
+
+	dev_info(&drv_client->dev, "Registered IRQ: %d\n", irq_num);
+
+	g_mpu6050_data.drv_client = drv_client;
+
 	/* Setup the device */
 	/* No error handling here! */
-	i2c_smbus_write_byte_data(drv_client, REG_CONFIG, 0);
-	i2c_smbus_write_byte_data(drv_client, REG_GYRO_CONFIG, 0);
 	i2c_smbus_write_byte_data(drv_client, REG_ACCEL_CONFIG, 0);
 	i2c_smbus_write_byte_data(drv_client, REG_FIFO_EN, 0);
-	i2c_smbus_write_byte_data(drv_client, REG_INT_PIN_CFG, 0);
-	i2c_smbus_write_byte_data(drv_client, REG_INT_ENABLE, 0);
+
 	i2c_smbus_write_byte_data(drv_client, REG_USER_CTRL, 0);
 	i2c_smbus_write_byte_data(drv_client, REG_PWR_MGMT_1, 0);
 	i2c_smbus_write_byte_data(drv_client, REG_PWR_MGMT_2, 0);
 
-	g_mpu6050_data.drv_client = drv_client;
+	i2c_smbus_write_byte_data(drv_client, REG_CONFIG, CONF_DLPF_CFG_4);
+	i2c_smbus_write_byte_data(drv_client, REG_GYRO_CONFIG, GCON_FCHOICE_DLPF_EN);
+	i2c_smbus_write_byte_data(drv_client, REG_SAMPLERATE_DIV, 7);
+	
+	i2c_smbus_write_byte_data(drv_client, REG_INT_PIN_CFG,
+								INT_PIN_CFG_ACTIVE_LOW |
+								INT_PIN_CFG_STATUS_READ_CLEAR);
+	i2c_smbus_write_byte_data(drv_client, REG_INT_ENABLE, INT_EN_DATA_RDY);
 
 	dev_info(&drv_client->dev, "i2c driver probed\n");
 	return 0;
@@ -101,9 +145,14 @@ static int mpu6050_probe(struct i2c_client *drv_client,
 
 static int mpu6050_remove(struct i2c_client *drv_client)
 {
+	free_irq(irq_num, &drv_client);
+
+	gpiod_put(irq_line);
+
 	g_mpu6050_data.drv_client = 0;
 
 	dev_info(&drv_client->dev, "i2c driver removed\n");
+
 	return 0;
 }
 
@@ -252,7 +301,7 @@ static int mpu6050_init(void)
 		pr_err("mpu6050: failed to create sysfs class attribute temperature: %d\n", ret);
 		return ret;
 	}
-	
+
 	pr_info("mpu6050: sysfs class attributes created\n");
 
 	pr_info("mpu6050: module loaded\n");

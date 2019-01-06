@@ -2,12 +2,14 @@
 #define _MPU6050_REGS_H
 
 /* Registed addresses */
+#define REG_SAMPLERATE_DIV  0x19
 #define REG_CONFIG			0x1A
 #define REG_GYRO_CONFIG		0x1B
 #define REG_ACCEL_CONFIG	0x1C
 #define REG_FIFO_EN			0x23
 #define REG_INT_PIN_CFG		0x37
 #define REG_INT_ENABLE		0x38
+#define REG_INT_STATUS      0x39
 #define REG_ACCEL_XOUT_H	0x3B
 #define REG_ACCEL_XOUT_L	0x3C
 #define REG_ACCEL_YOUT_H	0x3D
@@ -29,5 +31,15 @@
 
 /* Register values */
 #define MPU6050_WHO_AM_I	0x68
+
+#define INT_PIN_CFG_ACTIVE_LOW          0x80
+#define INT_PIN_CFG_LATCH_INT_EN        0x20
+#define INT_PIN_CFG_STATUS_READ_CLEAR   0x10
+
+#define INT_EN_DATA_RDY                 0x01
+
+#define CONF_DLPF_CFG_4                 0x04
+
+#define GCON_FCHOICE_DLPF_EN            0x02
 
 #endif /* _MPU6050_REGS_H */
