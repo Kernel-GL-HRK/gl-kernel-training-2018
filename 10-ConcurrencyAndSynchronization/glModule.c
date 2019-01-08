@@ -1,12 +1,8 @@
-#include <linux/init.h>
 #include <linux/module.h>
-#include <linux/moduleparam.h>
-#include <linux/kernel.h>
-#include <linux/err.h>
 #include <linux/delay.h>
 #include <linux/kthread.h>
-#include <linux/list.h>
 #include <linux/slab.h>
+
 
 //default init
 static int T = 3;
@@ -48,10 +44,13 @@ static int stopThreads(struct threadsList *const pthreads)
  
 static int threadfunc( void * data )
 {
-	
+	static DEFINE_SPINLOCK(spinlock);
+	unsigned long flags;
 	while (!kthread_should_stop())
 	{
+		spin_lock_irqsave(&spinlock, flags);
 		pr_info("thread: child process [%d] is running\n", current->pid );
+		spin_unlock_irqrestore(&spinlock, flags);
 		msleep(1000);
 	}
 	pr_info("thread: child process [%d] is completed\n", current->pid );
@@ -86,7 +85,6 @@ int startThreads(int numThreads, struct threadsList *const _threads)
 
 		wake_up_process(newThreadNode->thread);
 		list_add_tail(&newThreadNode->list, &_threads->list);
-		pr_info("thread_[%d] is running\n", cntThreads );
 		++cntThreads;
 	} while(cntThreads < numThreads);
 
@@ -97,7 +95,7 @@ int startThreads(int numThreads, struct threadsList *const _threads)
 static int __init glModule_init(void)
 {
 	int ret = 0;
-	pr_info("Hello, world!\n");
+	pr_info("Task 10 - init module\n");
 	
 	if (N <= 0) {
 		pr_err("Task10_module: error creating threads.\n"
@@ -127,7 +125,7 @@ static int __init glModule_init(void)
 
 static void __exit glModule_exit(void)
 {
-	pr_info("Goodbye, world!\n");
+	pr_info("Task 10 - Exit module!\n");
 }
 
 module_init(glModule_init);
@@ -136,5 +134,5 @@ module_exit(glModule_exit);
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Roman Nikishyn");
-MODULE_DESCRIPTION("A simple Linux driver.");
+MODULE_DESCRIPTION("Module for task 10-ConcurrencyAndSynchronization - Spinlock");
 MODULE_VERSION("0.1");
