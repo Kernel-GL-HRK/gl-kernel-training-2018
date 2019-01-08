@@ -1,0 +1,10 @@
+
+&i2c0 {
+	status = "okay";
+	gl_gyro: gl_gyro@68 {
+		compatible = "gl,mpu6050";
+		reg = <0x68>;
+		status = "okay";
+		int-gpios=<&pio 0 6 1>;
+	};
+};
