@@ -3,7 +3,6 @@
 #include <linux/kthread.h>
 #include <linux/slab.h>
 
-
 //default init
 static int T = 3;
 static int N = 1;
@@ -20,7 +19,7 @@ struct threadsList{
 static struct threadsList threads;
 
 static int stopThreads(struct threadsList *const pthreads)
-{	
+{
 	struct list_head	*ptr	= NULL;
 	struct list_head	*next	= NULL;
 	struct threadsList	*entry	= NULL;
@@ -32,7 +31,7 @@ static int stopThreads(struct threadsList *const pthreads)
 	if (isEmpty)
 		return 0;
 
-	list_for_each_safe(ptr, next, &pthreads->list){
+	list_for_each_safe(ptr, next, &pthreads->list) {
 		entry = list_entry(ptr, struct threadsList, list);
 		kthread_stop(entry->thread);
 		list_del(&entry->list);
@@ -41,19 +40,19 @@ static int stopThreads(struct threadsList *const pthreads)
 
 	return 0;
 }
- 
-static int threadfunc( void * data )
+
+static int threadfunc(void *data)
 {
 	static DEFINE_SPINLOCK(spinlock);
 	unsigned long flags;
-	while (!kthread_should_stop())
-	{
+	
+	while (!kthread_should_stop()) {
 		spin_lock_irqsave(&spinlock, flags);
 		pr_info("thread: child process [%d] is running\n", current->pid );
 		spin_unlock_irqrestore(&spinlock, flags);
 		msleep(1000);
 	}
-	pr_info("thread: child process [%d] is completed\n", current->pid );
+	pr_info("thread: child process [%d] is completed\n", current->pid);
 	return 0;
 }
 
@@ -61,7 +60,7 @@ static int threadfunc( void * data )
 int startThreads(int numThreads, struct threadsList *const _threads)
 {
 	int cntThreads = 0;
-	pr_info("thread: main process [%d] is running\n", current->pid );
+	pr_info("thread: main process [%d] is running\n", current->pid);
 
 	if (numThreads <= 0) {
 		pr_err("Task10_module: error creating threads.\n"
@@ -78,15 +77,15 @@ int startThreads(int numThreads, struct threadsList *const _threads)
 
 		if (!newThreadNode)
 			return -ENOMEM;
-		
-		newThreadNode->thread = kthread_create( threadfunc, NULL, "Thread_%d", cntThreads);
-		if (newThreadNode->thread == ERR_PTR (-ENOMEM))
+
+		newThreadNode->thread = kthread_create(threadfunc, NULL, "Thread_%d", cntThreads);
+		if (newThreadNode->thread == ERR_PTR(-ENOMEM))
 			return -ENOMEM;
 
 		wake_up_process(newThreadNode->thread);
 		list_add_tail(&newThreadNode->list, &_threads->list);
 		++cntThreads;
-	} while(cntThreads < numThreads);
+	} while (cntThreads < numThreads);
 
 	return 0;
 }
@@ -96,7 +95,7 @@ static int __init glModule_init(void)
 {
 	int ret = 0;
 	pr_info("Task 10 - init module\n");
-	
+
 	if (N <= 0) {
 		pr_err("Task10_module: error creating threads.\n"
 			"N  is not valid. Set value greater than 0\n");
@@ -113,11 +112,11 @@ static int __init glModule_init(void)
 	INIT_LIST_HEAD(&threads.list);
 
 	ret = startThreads(N, &threads);
-	if (ret) return ret;
+	if (ret)
+		return ret;
 
 	msleep(T * 1000);
-	pr_info("thread: main process [%d] is completed\n", current->pid );
-	
+	pr_info("thread: main process [%d] is completed\n", current->pid);
 	stopThreads(&threads);
 
 	return 0;
@@ -134,5 +133,5 @@ module_exit(glModule_exit);
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Roman Nikishyn");
-MODULE_DESCRIPTION("Module for task 10-ConcurrencyAndSynchronization - Spinlock");
+MODULE_DESCRIPTION("Module for task 10-ConcurrencyAndSynchronization - SpinLock");
 MODULE_VERSION("0.1");
