@@ -1,13 +1,9 @@
 #include <linux/module.h>
-#include <linux/kernel.h>
 #include <linux/kthread.h>
-#include <linux/sched.h>
-#include <linux/time.h>
-#include <linux/timer.h>
 #include <linux/delay.h>
-#include <linux/spinlock.h>
 #include <linux/rtmutex.h>
-#include <linux/semaphore.h>
+// #include <linux/spinlock.h>
+// #include <linux/semaphore.h>
 
 #define MAX_THREADS 4
 
@@ -40,7 +36,7 @@ static DEFINE_RT_MUTEX(mutexname);
  	return 0;
 }
 
- int mymodule_init(void)
+ int mythread_init(void)
 {
 	int i;
 
@@ -52,7 +48,7 @@ static DEFINE_RT_MUTEX(mutexname);
  	return 0;
 }
 
- void mymodule_exit(void)
+ void mythread_exit(void)
 {
 	int ret, i;
 
@@ -63,10 +59,10 @@ static DEFINE_RT_MUTEX(mutexname);
 	}
 }
 
-module_init(mymodule_init);
-module_exit(mymodule_exit);
+module_init(mythread_init);
+module_exit(mythread_exit);
  
 MODULE_AUTHOR("Eugene.Ovdiyuk <ovdiyuk@gmail.com>");
-MODULE_DESCRIPTION("Simple sysfs module");
+MODULE_DESCRIPTION("My thread application");
 MODULE_LICENSE("GPL");
 MODULE_VERSION("0.1");
