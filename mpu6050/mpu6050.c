@@ -5,7 +5,6 @@
 #include <linux/i2c.h>
 #include <linux/timer.h>
 #include <linux/i2c-dev.h>
-#include <linux/gpio/consumer.h>
 #include <linux/interrupt.h>
 #include <linux/workqueue.h>
 
@@ -24,10 +23,6 @@ struct mpu6050_data {
 	int gyro_values[3];
 	int temperature;
 };
-
-static struct gpio_desc *irq_line;
-
-static int irq_num;
 
 static struct mpu6050_data g_mpu6050_data;
 
@@ -136,28 +131,19 @@ static int mpu6050_probe(struct i2c_client *drv_client,
 		"i2c mpu6050 device found, WHO_AM_I register value = 0x%X\n",
 		ret);
 
-	irq_line = gpiod_get(&drv_client->dev, "int", GPIOD_IN);
-
-	gpiod_direction_input(irq_line);
-
-	if (IS_ERR(irq_line)) {
-		dev_err(&drv_client->dev, "unable to retreive IRQ GPIO descriptor\n");
+	if (drv_client->irq < 0) {
+		dev_err(&drv_client->dev, "No IRQ specified\n");
 		return -1;
 	}
 
-	irq_num = gpiod_to_irq(irq_line);
+	dev_info(&drv_client->dev, "Requesting IRQ: %d\n", drv_client->irq);
 
-	if (irq_num < 0) {
-		dev_err(&drv_client->dev, "unable to receive IRQ for given GPIO\n");
-		return -1;
-	}
-
-	if (request_irq(irq_num, mpu_irq, IRQF_TRIGGER_FALLING, "mpu6050", &drv_client)) {
+	if (request_irq(drv_client->irq, mpu_irq, IRQF_TRIGGER_FALLING | IRQF_SHARED, "mpu6050", &drv_client)) {
 		dev_err(&drv_client->dev, "request IRQ failed\n");
 		return -1;
 	}
 
-	dev_info(&drv_client->dev, "Registered IRQ: %d\n", irq_num);
+	dev_info(&drv_client->dev, "Registered IRQ: %d\n", drv_client->irq);
 
 	g_mpu6050_data.drv_client = drv_client;
 
@@ -185,9 +171,7 @@ static int mpu6050_probe(struct i2c_client *drv_client,
 
 static int mpu6050_remove(struct i2c_client *drv_client)
 {
-	free_irq(irq_num, &drv_client);
-
-	gpiod_put(irq_line);
+	free_irq(drv_client->irq, &drv_client);
 
 	g_mpu6050_data.drv_client = 0;
 
@@ -200,6 +184,7 @@ static const struct i2c_device_id mpu6050_idtable[] = {
 	{ "mpu6050", 0 },
 	{ }
 };
+
 MODULE_DEVICE_TABLE(i2c, mpu6050_idtable);
 
 static struct i2c_driver mpu6050_i2c_driver = {
