@@ -1,0 +1,22 @@
+[46737.554141] mymodule: module loaded
+[46737.554147] mymodule: myparam = 0
+[46745.575069] mymodule: module exited
+[46747.173805] mymodule: module loaded
+[46747.173813] mymodule: myparam = 1
+[46747.173818] do_init_module: 'mymodule'->init suspiciously returned 1, it should follow 0/-E convention
+               do_init_module: loading module anyway...
+[46747.173827] CPU: 0 PID: 11460 Comm: insmod Tainted: G        W  O    4.9.0-8-686-pae #1 Debian 4.9.110-3+deb9u6
+[46747.173830] Hardware name: ASUSTeK Computer INC. 1016P/1015PE, BIOS 1301    05/06/2011
+[46747.173835]  f0a45e40 d32fb5b2 f9366040 00000001 d316b13d d36bb398 d35caa34 f936604c
+[46747.173850]  00000001 d35caa34 00000001 f08ec200 00000001 f0a45f0c d30f6a2a f9366088
+[46747.173864]  d37915c8 00000000 d36d7a52 f936604c d35cacc8 f936604c f83776d4 f0a45f6c
+[46747.173878] Call Trace:
+[46747.173896]  [<d32fb5b2>] ? dump_stack+0x55/0x73
+[46747.173909]  [<d316b13d>] ? do_init_module+0x7a/0x1c7
+[46747.173917]  [<d30f6a2a>] ? load_module+0x209a/0x26e0
+[46747.173929]  [<d30f7290>] ? SyS_finit_module+0xb0/0x100
+[46747.173940]  [<d3003728>] ? do_fast_syscall_32+0x98/0x160
+[46747.173951]  [<d35bca42>] ? sysenter_past_esp+0x47/0x75
+[46754.111641] mymodule: module loaded
+[46754.111646] mymodule: myparam = -1
+[46758.165471] mymodule: module exited

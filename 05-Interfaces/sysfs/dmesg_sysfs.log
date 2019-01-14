@@ -1,0 +1,48 @@
+linux/task05_sysfs$ insmod mysysfs.ko 
+linux/task05_sysfs$ demsg
+bash: demsg: команду не знайдено
+linux/task05_sysfs$ dmesg
+[  671.687915] mysysfs: module loaded
+linux/task05_sysfs$ echo 1234567890 > /sys/class/toLower/cvrt 
+linux/task05_sysfs$ cat /sys/class/toLower/stat 
+Converter statistics:
+Called: 1
+Write: 1
+Read : 0
+Converted: 0
+Now in buffer: 1234567890
+linux/task05_sysfs$ echo aAsSdDfFqQWwEeRr > /sys/class/toLower/cvrt 
+linux/task05_sysfs$ cat /sys/class/toLower/stat 
+Converter statistics:
+Called: 2
+Write: 2
+Read : 0
+Converted: 8
+Now in buffer: aassddffqqwweerr
+linux/task05_sysfs$ echo aAsSdDfFqQWwEeRrАаВвМм > /sys/class/toLower/cvrt 
+linux/task05_sysfs$ cat /sys/class/toLower/stat 
+Converter statistics:
+Called: 3
+Write: 3
+Read : 0
+Converted: 16
+Now in buffer: aassddffqqwweerrАаВвМм
+linux/task05_sysfs$ dmesg 
+[  671.687915] mysysfs: module loaded
+[  706.996059] mysysfs: call cvrt_write
+[  718.552624] mysysfs: call info_read
+[  746.676956] mysysfs: call cvrt_write
+[  750.617663] mysysfs: call info_read
+[  784.088708] mysysfs: call cvrt_write
+[  785.734273] mysysfs: call info_read
+linux/task05_sysfs$ rmmod mysysfs 
+linux/task05_sysfs$ dmesg 
+[  671.687915] mysysfs: module loaded
+[  706.996059] mysysfs: call cvrt_write
+[  718.552624] mysysfs: call info_read
+[  746.676956] mysysfs: call cvrt_write
+[  750.617663] mysysfs: call info_read
+[  784.088708] mysysfs: call cvrt_write
+[  785.734273] mysysfs: call info_read
+[  827.060813] mysysfs: module exited
+linux/task05_sysfs$ 

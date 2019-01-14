@@ -1,0 +1,56 @@
+~/projects/training/gl-kernel-training-2018/06-TimeManagement$ insmod my_time.ko delay=-1
+~/projects/training/gl-kernel-training-2018/06-TimeManagement$ echo 10 > /sys/class/myTime/set 
+~/projects/training/gl-kernel-training-2018/06-TimeManagement$ echo 0 > /sys/class/myTime/set 
+~/projects/training/gl-kernel-training-2018/06-TimeManagement$ echo 10 > /sys/class/myTime/set 
+~/projects/training/gl-kernel-training-2018/06-TimeManagement$ echo 0 > /sys/class/myTime/set 
+~/projects/training/gl-kernel-training-2018/06-TimeManagement$ echo 7500 > /sys/class/myTime/set 
+~/projects/training/gl-kernel-training-2018/06-TimeManagement$ cat /sys/class/myTime/info 
+Now: 2018-11-19 22-06-45
+Time in sec from previous read:: 74
+Last read time (absolute): 2018-11-19 22-05-31
+~/projects/training/gl-kernel-training-2018/06-TimeManagement$ cat /sys/class/myTime/info 
+Now: 2018-11-19 22-06-56
+Time in sec from previous read:: 10
+Last read time (absolute): 2018-11-19 22-06-46
+~/projects/training/gl-kernel-training-2018/06-TimeManagement$ rmmod my_time
+[ 5065.427221] my_time: param value out of bounds: -1
+[ 5065.427223] my_time: set time delay to default: 5000
+[ 5065.427225] my_time: loaded
+[ 5070.451631] my_time: timer called (my_timer_callback), timer delay: 5000 [ms]
+[ 5075.572154] my_time: timer called (my_timer_callback), timer delay: 5000 [ms]
+[ 5080.691746] my_time: timer called (my_timer_callback), timer delay: 5000 [ms]
+[ 5085.812193] my_time: timer called (my_timer_callback), timer delay: 5000 [ms]
+[ 5088.613852] my_time: call my_store
+[ 5088.613856] my_time: call my_store, new delay obtained: 10
+[ 5088.613858] my_time: call my_store, value out of bounds, use old value: 5000
+[ 5093.747821] my_time: timer called (my_timer_callback), timer delay: 5000 [ms]
+[ 5096.323119] my_time: call my_store
+[ 5096.323123] my_time: call my_store, new delay obtained: 0
+[ 5096.323124] my_time: call my_store, switch timer off!
+[ 5098.519279] my_time: call my_store
+[ 5098.519283] my_time: call my_store, new delay obtained: 10
+[ 5098.519285] my_time: call my_store, value out of bounds, use old value: 0
+[ 5098.867603] my_time: timer called (my_timer_callback), timer delay: 0 [ms]
+[ 5100.509838] my_time: call my_store
+[ 5100.509843] my_time: call my_store, new delay obtained: 0
+[ 5100.509844] my_time: call my_store, switch timer off!
+[ 5129.377282] my_time: call my_store
+[ 5129.377291] my_time: call my_store, new delay obtained: 7500
+[ 5129.377293] my_time: call my_store, set new timer delay value: 7500
+[ 5137.012442] my_time: timer called (my_timer_callback), timer delay: 7500 [ms]
+[ 5140.358199] my_time: call my_show
+[ 5140.358202] my_time: call my_show 
+[ 5144.693232] my_time: timer called (my_timer_callback), timer delay: 7500 [ms]
+[ 5151.170306] my_time: call my_show
+[ 5151.170310] my_time: call my_show 
+[ 5152.373034] my_time: timer called (my_timer_callback), timer delay: 7500 [ms]
+[ 5160.052812] my_time: timer called (my_timer_callback), timer delay: 7500 [ms]
+[ 5167.288764] my_time: call my_store
+[ 5167.288769] my_time: call my_store, new delay obtained: 0
+[ 5167.288770] my_time: call my_store, switch timer off!
+[ 5167.733583] my_time: timer called (my_timer_callback), timer delay: 0 [ms]
+[ 5415.288917] my_time: removed
+
+
+
+
