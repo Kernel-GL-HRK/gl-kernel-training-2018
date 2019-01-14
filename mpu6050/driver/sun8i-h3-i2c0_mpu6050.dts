@@ -1,0 +1,31 @@
+/dts-v1/;
+/plugin/;
+
+/ {
+	compatible = "allwinner,sun8i-h3";
+
+	fragment@0 {
+		target = <&pio>;
+		__overlay__ {
+			accelerometer_pins:accelerometer_pins{
+				pins = "PA6";
+				function = "gpio_in";
+			};
+		};
+	};
+
+	fragment@1 {
+		target = <&i2c0>;
+		__overlay__ {
+			accelerometer: mpu6050@68 {
+				compatible = "mpu6050";
+				reg = <0x68>;
+				pinctrl-names = "default";
+				pinctrl-0 = <&accelerometer_pins>;
+
+				mpu6050-int-gpio = <&pio 0 6 0>;
+				status = "okay"; 				
+			};
+		};
+	};
+};
