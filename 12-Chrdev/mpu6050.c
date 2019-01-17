@@ -309,9 +309,40 @@ static struct class mpu6050_module_class = {
 	.class_groups = mpu6050_class_groups,
 };
 
+
+static int mpu6050_open(struct inode *inodep, struct file *filep)
+{
+	return 0;
+}
+
+static int mpu6050_release(struct inode *inodep, struct file *filep)
+{
+	return 0;
+}
+
+static ssize_t mpu6050_read(struct file *filep, char *buffer, size_t len, loff_t *offset)
+{
+	return len;
+}
+
+static ssize_t mpu6050_write(struct file *filep, const char *buffer, size_t len, loff_t *offset)
+{
+	return len;
+}
+
+static long int mpu6050_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
+{
+	return 0;
+}
+
+
 static struct file_operations fops =
 {
-
+	.open = mpu6050_open,
+	.release = mpu6050_release,
+	.read = mpu6050_read,
+	.write = mpu6050_write,
+	.unlocked_ioctl = mpu6050_ioctl,
 };
 
 static int mpu6050_probe(struct i2c_client *client, const struct i2c_device_id *id)
