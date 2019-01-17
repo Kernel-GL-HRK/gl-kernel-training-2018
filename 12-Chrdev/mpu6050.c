@@ -20,6 +20,7 @@
 
 #define MODULE_TAG			"mpu6050"
 #define CLASS_NAME			"mpu6050"
+#define DEVICE_NAME			"accel"
 
 #define ROUND_BUFFER_SIZE 128
 struct round_buffer {
@@ -53,6 +54,9 @@ struct mpu6050_device {
 };
 struct mpu6050_device *mpu6050_dev;
 
+static int major;
+static int minor;
+static struct device *pdev;
 
 static void round_buffer_init(struct round_buffer *buffer)
 {
@@ -305,6 +309,11 @@ static struct class mpu6050_module_class = {
 	.class_groups = mpu6050_class_groups,
 };
 
+static struct file_operations fops =
+{
+
+};
+
 static int mpu6050_probe(struct i2c_client *client, const struct i2c_device_id *id)
 {
 	int ret;
@@ -331,6 +340,21 @@ static int mpu6050_probe(struct i2c_client *client, const struct i2c_device_id *
 	ret = class_register(&mpu6050_module_class);
 	if (ret < 0) {
 		dev_err(&client->dev, "Can't register a class in sysfs\n");
+		ret = -ENOMEM;
+		goto fail2;
+	}
+
+	major = register_chrdev(0, DEVICE_NAME, &fops);
+	if(major < 0) {
+		dev_err(&client->dev, "Can't register char device\n");
+		ret = -ENOMEM;
+		goto fail2;
+	}
+
+	pdev = device_create(&mpu6050_module_class, &client->dev, MKDEV(major, 0), NULL, DEVICE_NAME);
+	if (IS_ERR(pdev)) {
+		unregister_chrdev(major, DEVICE_NAME);
+		dev_err(&client->dev, "Can't create device\n");
 		ret = -ENOMEM;
 		goto fail2;
 	}
@@ -385,7 +409,10 @@ static int mpu6050_remove(struct i2c_client *client)
 	flush_work(&mpu6050->work);
 	
 	kfree(mpu6050);
+
+	device_destroy(&mpu6050_module_class, MKDEV(major, 0));
 	class_unregister(&mpu6050_module_class);
+	unregister_chrdev(major, DEVICE_NAME);
 
 	dev_info(&client->dev, "module unloaded\n");
 	return 0;
