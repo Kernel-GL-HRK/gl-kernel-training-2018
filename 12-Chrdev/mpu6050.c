@@ -15,6 +15,7 @@
 #include <linux/of_irq.h>
 #include <linux/interrupt.h>
 #include <linux/workqueue.h>
+#include "ioctl.h"
 
 #include <mpu6050-regs.h>
 
@@ -55,7 +56,6 @@ struct mpu6050_device {
 struct mpu6050_device *mpu6050_dev;
 
 static int major;
-static int minor;
 static struct device *pdev;
 
 static int is_open;
@@ -357,6 +357,75 @@ static ssize_t mpu6050_write(struct file *filep, const char *buffer, size_t len,
 
 static long int mpu6050_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 {
+	int ret;
+
+	switch (cmd)
+	{
+		case IOCTL_GET_RAW_DATA:
+			{
+			MPU6050_RAW_DATA_STRUCT 	data;
+
+			data.accel_raw_x = mpu6050_dev->accel_raw_x;
+			data.accel_raw_y = mpu6050_dev->accel_raw_y;
+			data.accel_raw_z = mpu6050_dev->accel_raw_z;
+			data.gyro_raw_x  = mpu6050_dev->gyro_raw_x;
+			data.gyro_raw_y  = mpu6050_dev->gyro_raw_y;
+			data.gyro_raw_z  = mpu6050_dev->gyro_raw_z;
+			data.temp_raw = mpu6050_dev->temp_raw;
+
+			ret = copy_to_user((void *)arg, &data, sizeof(MPU6050_RAW_DATA_STRUCT));
+			if(ret) {
+				return -EFAULT;
+			}
+
+			break;
+			}
+		case IOCTL_GET_STAT:
+			{
+			MPU6050_STAT_STRUCT			stat;
+
+			stat.irq_handled = mpu6050_dev->irq_handled;
+			stat.irq_per_sec = mpu6050_dev->irq_per_sec;
+
+			ret = copy_to_user((void *)arg, &stat, sizeof(MPU6050_STAT_STRUCT));
+			if(ret) {
+				return -EFAULT;
+			}
+
+			break;
+			}
+		case IOCTL_WRITE_REG:
+			{
+			int reg, val;
+
+			reg = (arg >> 8);
+			val = arg & 0xff;
+
+			ret = i2c_smbus_write_byte_data(mpu6050_dev->client, reg, val);
+			if (IS_ERR_VALUE(ret)) {
+				return ret;
+			}
+
+			break;
+			}
+		case IOCTL_READ_REG:
+			{
+			char reg;
+
+			reg = (arg >> 8);
+
+			ret = i2c_smbus_read_byte_data(mpu6050_dev->client, reg);
+			if (IS_ERR_VALUE(ret)) {
+				return ret;
+			}
+
+			return ret;
+			}
+		default:
+			return -EINVAL;
+			break;
+	}
+
 	return 0;
 }
 
