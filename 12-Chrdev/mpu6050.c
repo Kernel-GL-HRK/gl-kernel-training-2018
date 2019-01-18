@@ -352,7 +352,7 @@ static ssize_t mpu6050_read(struct file *filep, char *buffer, size_t len, loff_t
 
 static ssize_t mpu6050_write(struct file *filep, const char *buffer, size_t len, loff_t *offset)
 {
-	return len;
+	return -EFAULT;
 }
 
 static long int mpu6050_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
