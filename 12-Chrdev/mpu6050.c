@@ -58,6 +58,9 @@ static int major;
 static int minor;
 static struct device *pdev;
 
+static int is_open;
+static const char *read_message = "Please, use IOCTL instead\n";
+
 static void round_buffer_init(struct round_buffer *buffer)
 {
 	buffer->head = 0;
@@ -312,17 +315,39 @@ static struct class mpu6050_module_class = {
 
 static int mpu6050_open(struct inode *inodep, struct file *filep)
 {
+	if(is_open) {
+		pr_debug("%s: Device is already opened");
+		return -EBUSY;
+	}
+	is_open = 1;
+
 	return 0;
 }
 
 static int mpu6050_release(struct inode *inodep, struct file *filep)
 {
+	is_open = 0;
 	return 0;
 }
 
 static ssize_t mpu6050_read(struct file *filep, char *buffer, size_t len, loff_t *offset)
 {
-	return len;
+	int ret;
+	static int flag = 0;
+
+	ret = copy_to_user(buffer, read_message, strlen(read_message));
+	if (ret) {
+		return -EFAULT;
+	}
+
+	//just for cat
+	if(flag) {
+		flag = 0;
+		return strlen(read_message);
+	} else {
+		flag = 1;
+		return 0;
+	}
 }
 
 static ssize_t mpu6050_write(struct file *filep, const char *buffer, size_t len, loff_t *offset)
