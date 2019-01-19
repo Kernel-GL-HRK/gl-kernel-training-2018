@@ -11,6 +11,9 @@ all:
 	else \
 		$(MAKE) ARCH=$(TARGET_ARCH) CROSS_COMPILE=$(TARGET_CC) -C $(KERNEL_DIR) M=$(shell pwd) modules;\
     fi
+app:
+	arm-linux-gnueabihf-gcc accelapp.c -o userapp
+
 clean:
 	@rm -f *.o .*.cmd .*.flags *.mod.c *.order
 	@rm -f .*.*.cmd *.symvers *~ *.*~ TODO.*
