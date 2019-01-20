@@ -1,0 +1,11 @@
+olegh@orangepione:/sys/class/mpu6050$ cat accel
+10476 2944 12188
+olegh@orangepione:/sys/class/mpu6050$ cat gyro
+-198 138 -126
+olegh@orangepione:/sys/class/mpu6050$ cat temperature
+30
+olegh@orangepione:/sys/class/mpu6050$ cat all
+10356 2812 12276
+-248 191 -105
+30
+olegh@orangepione:/sys/class/mpu6050$
