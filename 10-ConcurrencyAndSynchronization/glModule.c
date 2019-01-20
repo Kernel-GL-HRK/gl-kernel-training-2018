@@ -2,6 +2,7 @@
 #include <linux/delay.h>
 #include <linux/kthread.h>
 #include <linux/slab.h>
+#include <linux/rtmutex.h>
 
 //default init
 static int T = 3;
@@ -43,13 +44,11 @@ static int stopThreads(struct threadsList *const pthreads)
 
 static int threadfunc(void *data)
 {
-	static DEFINE_SPINLOCK(spinlock);
-	unsigned long flags;
-	
+	static DEFINE_RT_MUTEX(mutex);
 	while (!kthread_should_stop()) {
-		spin_lock_irqsave(&spinlock, flags);
-		pr_info("thread: child process [%d] is running\n", current->pid );
-		spin_unlock_irqrestore(&spinlock, flags);
+		rt_mutex_lock(&mutex);
+		pr_info("thread: child process [%d] is running\n", current->pid);
+		rt_mutex_unlock(&mutex);
 		msleep(1000);
 	}
 	pr_info("thread: child process [%d] is completed\n", current->pid);
@@ -133,5 +132,5 @@ module_exit(glModule_exit);
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Roman Nikishyn");
-MODULE_DESCRIPTION("Module for task 10-ConcurrencyAndSynchronization - SpinLock");
+MODULE_DESCRIPTION("Module for task 10-ConcurrencyAndSynchronization - RT Mutex");
 MODULE_VERSION("0.1");
