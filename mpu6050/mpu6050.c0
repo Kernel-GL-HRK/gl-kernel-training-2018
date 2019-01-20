@@ -5,14 +5,7 @@
 #include <linux/i2c.h>
 #include <linux/i2c-dev.h>
 
-#include <linux/jiffies.h>
-
 #include "mpu6050-regs.h"
-
-uint32_t GetTickCount(void)
-{
-	return jiffies_to_msecs(get_jiffies_64());
-}
 
 
 struct mpu6050_data {
@@ -20,7 +13,6 @@ struct mpu6050_data {
 	int accel_values[3];
 	int gyro_values[3];
 	int temperature;
-	uint32_t LastReadTick;
 };
 
 static struct mpu6050_data g_mpu6050_data;
@@ -59,14 +51,7 @@ static int mpu6050_read_data(void)
 	dev_info(&drv_client->dev, "TEMP = %d\n",
 		g_mpu6050_data.temperature);
 
-	g_mpu6050_data.LastReadTick = GetTickCount();
 	return 0;
-}
-
-static int mpu6050_read_data2(void)
-{
-	if ((GetTickCount() - g_mpu6050_data.LastReadTick) < 3) return 0;
-	return mpu6050_read_data();
 }
 
 static int mpu6050_probe(struct i2c_client *drv_client,
@@ -129,8 +114,7 @@ MODULE_DEVICE_TABLE(i2c, mpu6050_idtable);
 
 static struct i2c_driver mpu6050_i2c_driver = {
 	.driver = {
-		.name = "mpu6050",
-		.owner = THIS_MODULE,
+		.name = "gl_mpu6050",
 	},
 
 	.probe = mpu6050_probe,
@@ -138,66 +122,76 @@ static struct i2c_driver mpu6050_i2c_driver = {
 	.id_table = mpu6050_idtable,
 };
 
-static ssize_t accel_show(struct class *class, struct class_attribute *attr, char *buf)
+static ssize_t accel_x_show(struct class *class,
+			    struct class_attribute *attr, char *buf)
 {
-	mpu6050_read_data2();
+	mpu6050_read_data();
 
-	sprintf(buf, "%d %d %d\n", 
-		g_mpu6050_data.accel_values[0],
-		g_mpu6050_data.accel_values[1],
-		g_mpu6050_data.accel_values[2]
-		);
+	sprintf(buf, "%d\n", g_mpu6050_data.accel_values[0]);
 	return strlen(buf);
 }
 
-static ssize_t gyro_show(struct class *class, struct class_attribute *attr, char *buf)
+static ssize_t accel_y_show(struct class *class,
+			    struct class_attribute *attr, char *buf)
 {
-	mpu6050_read_data2();
+	mpu6050_read_data();
 
-	sprintf(buf, "%d %d %d\n",
-		g_mpu6050_data.gyro_values[0],
-		g_mpu6050_data.gyro_values[1],
-		g_mpu6050_data.gyro_values[2]
-	);
-
+	sprintf(buf, "%d\n", g_mpu6050_data.accel_values[1]);
 	return strlen(buf);
 }
 
-static ssize_t temp_show(struct class *class, struct class_attribute *attr, char *buf)
+static ssize_t accel_z_show(struct class *class,
+			    struct class_attribute *attr, char *buf)
 {
-	mpu6050_read_data2();
+	mpu6050_read_data();
+
+	sprintf(buf, "%d\n", g_mpu6050_data.accel_values[2]);
+	return strlen(buf);
+}
+
+static ssize_t gyro_x_show(struct class *class,
+			   struct class_attribute *attr, char *buf)
+{
+	mpu6050_read_data();
+
+	sprintf(buf, "%d\n", g_mpu6050_data.gyro_values[0]);
+	return strlen(buf);
+}
+
+static ssize_t gyro_y_show(struct class *class,
+			   struct class_attribute *attr, char *buf)
+{
+	mpu6050_read_data();
+
+	sprintf(buf, "%d\n", g_mpu6050_data.gyro_values[1]);
+	return strlen(buf);
+}
+
+static ssize_t gyro_z_show(struct class *class,
+			   struct class_attribute *attr, char *buf)
+{
+	mpu6050_read_data();
+
+	sprintf(buf, "%d\n", g_mpu6050_data.gyro_values[2]);
+	return strlen(buf);
+}
+
+static ssize_t temp_show(struct class *class,
+			 struct class_attribute *attr, char *buf)
+{
+	mpu6050_read_data();
 
 	sprintf(buf, "%d\n", g_mpu6050_data.temperature);
 	return strlen(buf);
 }
 
-static ssize_t all_show(struct class *class, struct class_attribute *attr, char *buf)
-{
-	mpu6050_read_data2();
-
-	sprintf(buf, "%d %d %d\n%d %d %d\n%d\n", 
-		g_mpu6050_data.accel_values[0],
-		g_mpu6050_data.accel_values[1],
-		g_mpu6050_data.accel_values[2],
-		g_mpu6050_data.gyro_values[0],
-		g_mpu6050_data.gyro_values[1],
-		g_mpu6050_data.gyro_values[2],
-		g_mpu6050_data.temperature
-		);
-	return strlen(buf);
-}
-
-#define CLASS_ATTR(myname, mymode, showfunc, mynull) \
-	static struct class_attribute  class_attr_##myname = { \
-		.attr = { .name = #myname , .mode = mymode }, \
-		.show = showfunc, \
-	};
-
-CLASS_ATTR(accel, 0444, &accel_show, NULL);
-CLASS_ATTR(gyro, 0444, &gyro_show, NULL);
+CLASS_ATTR(accel_x, 0444, &accel_x_show, NULL);
+CLASS_ATTR(accel_y, 0444, &accel_y_show, NULL);
+CLASS_ATTR(accel_z, 0444, &accel_z_show, NULL);
+CLASS_ATTR(gyro_x, 0444, &gyro_x_show, NULL);
+CLASS_ATTR(gyro_y, 0444, &gyro_y_show, NULL);
+CLASS_ATTR(gyro_z, 0444, &gyro_z_show, NULL);
 CLASS_ATTR(temperature, 0444, &temp_show, NULL);
-CLASS_ATTR(all, 0444, &all_show, NULL);
-
 
 static struct class *attr_class;
 
@@ -222,28 +216,46 @@ static int mpu6050_init(void)
 	}
 	pr_info("mpu6050: sysfs class created\n");
 
-	/* Create accel */
-	ret = class_create_file(attr_class, &class_attr_accel);
+	/* Create accel_x */
+	ret = class_create_file(attr_class, &class_attr_accel_x);
 	if (ret) {
-		pr_err("mpu6050: failed to create sysfs class attribute accel: %d\n", ret);
+		pr_err("mpu6050: failed to create sysfs class attribute accel_x: %d\n", ret);
 		return ret;
 	}
-	/* Create gyro */
-	ret = class_create_file(attr_class, &class_attr_gyro);
+	/* Create accel_y */
+	ret = class_create_file(attr_class, &class_attr_accel_y);
 	if (ret) {
-		pr_err("mpu6050: failed to create sysfs class attribute gyro: %d\n", ret);
+		pr_err("mpu6050: failed to create sysfs class attribute accel_y: %d\n", ret);
+		return ret;
+	}
+	/* Create accel_z */
+	ret = class_create_file(attr_class, &class_attr_accel_z);
+	if (ret) {
+		pr_err("mpu6050: failed to create sysfs class attribute accel_z: %d\n", ret);
+		return ret;
+	}
+	/* Create gyro_x */
+	ret = class_create_file(attr_class, &class_attr_gyro_x);
+	if (ret) {
+		pr_err("mpu6050: failed to create sysfs class attribute gyro_x: %d\n", ret);
+		return ret;
+	}
+	/* Create gyro_y */
+	ret = class_create_file(attr_class, &class_attr_gyro_y);
+	if (ret) {
+		pr_err("mpu6050: failed to create sysfs class attribute gyro_y: %d\n", ret);
+		return ret;
+	}
+	/* Create gyro_z */
+	ret = class_create_file(attr_class, &class_attr_gyro_z);
+	if (ret) {
+		pr_err("mpu6050: failed to create sysfs class attribute gyro_z: %d\n", ret);
 		return ret;
 	}
 	/* Create temperature */
 	ret = class_create_file(attr_class, &class_attr_temperature);
 	if (ret) {
 		pr_err("mpu6050: failed to create sysfs class attribute temperature: %d\n", ret);
-		return ret;
-	}
-	/* Create all */
-	ret = class_create_file(attr_class, &class_attr_all);
-	if (ret) {
-		pr_err("mpu6050: failed to create sysfs class attribute all: %d\n", ret);
 		return ret;
 	}
 
@@ -256,10 +268,13 @@ static int mpu6050_init(void)
 static void mpu6050_exit(void)
 {
 	if (attr_class) {
-		class_remove_file(attr_class, &class_attr_accel);
-		class_remove_file(attr_class, &class_attr_gyro);
+		class_remove_file(attr_class, &class_attr_accel_x);
+		class_remove_file(attr_class, &class_attr_accel_y);
+		class_remove_file(attr_class, &class_attr_accel_z);
+		class_remove_file(attr_class, &class_attr_gyro_x);
+		class_remove_file(attr_class, &class_attr_gyro_y);
+		class_remove_file(attr_class, &class_attr_gyro_z);
 		class_remove_file(attr_class, &class_attr_temperature);
-		class_remove_file(attr_class, &class_attr_all);
 		pr_info("mpu6050: sysfs class attributes removed\n");
 
 		class_destroy(attr_class);
@@ -275,7 +290,7 @@ static void mpu6050_exit(void)
 module_init(mpu6050_init);
 module_exit(mpu6050_exit);
 
-MODULE_AUTHOR("Oleg.Khokhlov <oleg.khokhlov.ua@gmail.com>");
+MODULE_AUTHOR("Andriy.Khulap <andriy.khulap@globallogic.com>");
 MODULE_DESCRIPTION("mpu6050 I2C acc&gyro");
 MODULE_LICENSE("GPL");
-MODULE_VERSION("0.3");
+MODULE_VERSION("0.1");

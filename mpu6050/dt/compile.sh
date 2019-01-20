@@ -1,0 +1,1 @@
+olegh@orangepione:/boot/overlay-user$ dtc -I dts -O dtb mpu6050.dtso > mpu6050.dtbo
