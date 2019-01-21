@@ -1,0 +1,20 @@
+/dts-v1/;
+/plugin/;
+
+/ {
+    compatible = "allwinner,sun8i-h3";
+
+    fragment@0 {
+	target = <&i2c0>;
+	__overlay__ {
+	    #address-cells = <1>;
+	    #size-cells = <0>;
+	    status = "okay";
+	    tic120@3C {
+		compatible = "tic120";
+		reg = <0x3C>;
+		status = "okay";
+	    };
+	};
+    };
+};

@@ -1,0 +1,1 @@
+dtc -I dts -O dtb tic120.dts > tic120.dtbo
