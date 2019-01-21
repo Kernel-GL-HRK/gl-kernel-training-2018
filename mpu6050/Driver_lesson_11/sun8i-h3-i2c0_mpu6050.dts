@@ -1,0 +1,35 @@
+/dts-v1/;
+/plugin/;
+
+/ {
+	compatible = "allwinner,sun8i-h3";
+
+	fragment@0 {
+		target = <&pio>;
+		__overlay__ {
+			accelerometer_irq_pin: accelerometer_irq_pin {
+				pins = "PA6";
+				function = "irq";
+				bias-pull-up;
+			};
+		};
+	};
+
+	fragment@1 {
+		target = <&i2c0>;
+		__overlay__ {
+			accelerometer: mpu6050@68 {
+				compatible = "mpu6050";
+				reg = <0x68>;
+				pinctrl-names = "default";
+				pinctrl-0 = <&accelerometer_irq_pin>;
+				
+				interrupt-parent = <&pio>;
+	            interrupts = <0 6 2>;				
+				interrupt-names = "MPU6050_INT";
+			
+				status = "okay"; 				
+			};
+		};
+	};
+};
