@@ -1,0 +1,76 @@
+bash$ 
+bash$ sudo dmesg -C
+bash$ sudo insmod omod6_kern_time.ko
+bash$ dmesg
+[164257.292896] omod6 Kernel time function test module started.
+bash$ 
+bash$ cat /sys/class/omod6/ktime 
+ktime (40995296 ticks, 250 HZ):
+1 module call
+24 sec from last call
+1542096090 sec curr abs time from Epoch (year:2018)
+1542096066 sec prev call abs time from Epoch
+0 ms - Timer Interval
+0 times timer called
+bash$ 
+bash$ 
+bash$ cat /sys/class/omod6/ktime 
+ktime (40997586 ticks, 250 HZ):
+2 module call
+9 sec from last call
+1542096099 sec curr abs time from Epoch (year:2018)
+1542096090 sec prev call abs time from Epoch
+0 ms - Timer Interval
+0 times timer called
+bash$ 
+bash$ 
+bash$ echo "5000 Hello from timer" > /sys/class/omod6/ktime
+bash$ 
+bash$ dmesg
+[164257.292896] omod6 Kernel time function test module started.
+[164312.443489] omod6 store (5000, 'Hello')
+[164312.443495] omod6 Timer started (interval=5000)
+bash$ 
+bash$ dmesg
+[164257.292896] omod6 Kernel time function test module started.
+[164312.443489] omod6 store (5000, 'Hello')
+[164312.443495] omod6 Timer started (interval=5000)
+[164317.680785] omod6 timer[1]: Hello (delay = 5240 ms)
+bash$ 
+bash$ 
+bash$ cat /sys/class/omod6/ktime 
+ktime (41007134 ticks, 250 HZ):
+3 module call
+38 sec from last call
+1542096137 sec curr abs time from Epoch (year:2018)
+1542096099 sec prev call abs time from Epoch
+5000 ms - Timer Interval
+1 times timer called
+bash$ 
+bash$ 
+bash$ echo "10000 Hello from timer2" > /sys/class/omod6/ktime
+bash$ echo "0 Hello from timer2" > /sys/class/omod6/ktime
+bash$ dmesg
+[164257.292896] omod6 Kernel time function test module started.
+[164312.443489] omod6 store (5000, 'Hello')
+[164312.443495] omod6 Timer started (interval=5000)
+[164317.680785] omod6 timer[1]: Hello (delay = 5240 ms)
+[164348.845400] omod6 store (10000, 'Hello')
+[164348.845406] omod6 Timer started (interval=10000)
+[164353.156345] omod6 store (0, 'Hello')
+[164353.156350] omod6 Timer disabled
+bash$ 
+bash$ 
+bash$ cat /sys/class/omod6/ktime 
+ktime (41018014 ticks, 250 HZ):
+4 module call
+44 sec from last call
+1542096181 sec curr abs time from Epoch (year:2018)
+1542096137 sec prev call abs time from Epoch
+0 ms - Timer Interval
+1 times timer called
+bash$ 
+bash$ 
+bash$ sudo rmmod omod6_kern_time
+bash$ 
+bash$ 
