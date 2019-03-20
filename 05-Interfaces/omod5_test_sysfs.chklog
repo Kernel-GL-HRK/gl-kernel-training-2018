@@ -1,0 +1,6 @@
+bash$ 
+bash$ ./chkpatch.sh omod5_test_sysfs.c
+total: 0 errors, 0 warnings, 123 lines checked
+
+/home/olegh/gl-kernel-training-2018/05-Interfaces/omod5_test_sysfs.c has no obvious style problems and is ready for submission.
+bash$ 

@@ -1,0 +1,56 @@
+bash$ 
+bash$ sudo dmesg -C
+bash$ sudo insmod omod5_test_sysfs.ko
+bash$ dmesg
+[130536.718871] omod5 SysFS ToLower v2 startup...
+[130536.718886] omod5 SysFS ToLower module loaded.
+bash$ cp omod5_test_sysfs.c /sys/class/omod5/tolower 
+bash$ tail /sys/class/omod5/tolower 
+}
+
+module_init(omod_init);
+module_exit(omod_exit);
+
+module_license("gpl");
+module_author("oleg khokhlov");
+module_description("olegh lesson05 module: test sys_fs");
+module_version("0.2");
+
+bash$ cp omod5_test_procfs.c /sys/class/omod5/tolower 
+bash$ tail /sys/class/omod5/tolower 
+}
+
+module_init(omod_init);
+module_exit(omod_exit);
+
+module_license("gpl");
+module_author("oleg khokhlov");
+module_description("olegh lesson05 module: test proc_fs");
+module_version("0.2");
+
+bash$ cat /sys/class/omod5/stat 
+omod5 ToUpper statistics:
+Total Calls: 3
+Total chars processed: 9631
+Total chars converted to uppercase: 1006
+bash$ dmesg
+[130536.718871] omod5 SysFS ToLower v2 startup...
+[130536.718886] omod5 SysFS ToLower module loaded.
+[130554.262904] omod5 store 4054 bytes
+[130566.510466] omod5 show (L=4054)
+[130585.069049] omod5 store 4096 bytes
+[130585.069075] omod5 store 1481 bytes
+[130588.359543] omod5 show (L=1481)
+[130602.413715] omod5 stat show (L=110)
+bash$ sudo rmmod omod5_test_sysfs
+bash$ dmesg
+[130536.718871] omod5 SysFS ToLower v2 startup...
+[130536.718886] omod5 SysFS ToLower module loaded.
+[130554.262904] omod5 store 4054 bytes
+[130566.510466] omod5 show (L=4054)
+[130585.069049] omod5 store 4096 bytes
+[130585.069075] omod5 store 1481 bytes
+[130588.359543] omod5 show (L=1481)
+[130602.413715] omod5 stat show (L=110)
+[130646.708373] omod5 SysFS ToUpper normal shutdown.
+bash$ 

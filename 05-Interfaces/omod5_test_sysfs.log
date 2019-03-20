@@ -1,0 +1,28 @@
+ash$ 
+bash$ sudo dmesg -C
+bash$ sudo insmod omod5_test_sysfs.ko
+bash$ dmesg
+[105764.971965] omod5 SysFS ToLower v1 startup...
+[105764.971980] omod5 SysFS ToLower module loaded.
+bash$ ls /sys/class/omod5
+tolower
+bash$ ls -l /sys/class/omod5
+итого 0
+-rw-rw-rw- 1 root root 4096 ноя 11 20:51 tolower
+bash$ echo "HELLO sys fs module!" > /sys/class/omod5/tolower 
+bash$ cat /sys/class/omod5/tolower 
+hello sys fs module!
+bash$ dmesg
+[105764.971965] omod5 SysFS ToLower v1 startup...
+[105764.971980] omod5 SysFS ToLower module loaded.
+[105818.176284] omod5 store 21 bytes
+[105831.490681] omod5 show (L=21)
+bash$ sudo rmmod omod5_test_sysfs 
+bash$ dmesg
+[105764.971965] omod5 SysFS ToLower v1 startup...
+[105764.971980] omod5 SysFS ToLower module loaded.
+[105818.176284] omod5 store 21 bytes
+[105831.490681] omod5 show (L=21)
+[105850.026518] omod5 SysFS ToUpper normal shutdown.
+bash$ 
+bash$ 

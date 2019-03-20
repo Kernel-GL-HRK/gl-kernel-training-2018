@@ -1,0 +1,47 @@
+bash$ 
+bash$ sudo dmesg -C
+bash$ sudo insmod omod5_test_procfs.ko
+bash$ dmesg
+[129595.392819] omod5 ProcFS ToUpper v2 startup...
+[129595.392826] omod5 ProcFS ToUpper module loaded
+bash$ cp omod5_test_procfs.c /proc/omod5/toupper 
+bash$ cat /proc/omod5/stat
+omod5 ToUpper statistics:
+Total Calls: 1
+Total chars processed: 5577
+Total chars converted to uppercase: 2879
+bash$ echo "hello module!" >> /proc/omod5/toupper 
+bash$ tail /proc/omod5/toupper 
+
+MODULE_INIT(OMOD_INIT);
+MODULE_EXIT(OMOD_EXIT);
+
+MODULE_LICENSE("GPL");
+MODULE_AUTHOR("OLEG KHOKHLOV");
+MODULE_DESCRIPTION("OLEGH LESSON05 MODULE: TEST PROC_FS");
+MODULE_VERSION("0.2");
+
+HELLO MODULE!
+bash$ cat /proc/omod5/stat 
+omod5 ToUpper statistics:
+Total Calls: 2
+Total chars processed: 5591
+Total chars converted to uppercase: 2890
+bash$ sudo rmmod omod5_test_procfs
+bash$ dmesg
+[129595.392819] omod5 ProcFS ToUpper v2 startup...
+[129595.392826] omod5 ProcFS ToUpper module loaded
+[129615.226823] omod5 open. mode: 1801E (WRITE)
+[129615.226966] omod5 write request 5577 bytes, Stored: 5577, In Buff: 5577
+[129631.312435] omod5 stat read 131072 bytes, result: 110
+[129650.506711] omod5 open. mode: 1801E (WRITE)
+[129650.506773] omod5 write request 14 bytes, Stored: 14, In Buff: 5591
+[129659.732238] omod5 open. mode: 801D (READ)
+[129659.732258] omod5 seek 0, 1, Result:0
+[129659.732267] omod5 seek 0, 2, Result:5591
+[129659.732284] omod5 seek 0, 0, Result:0
+[129659.732359] omod5 read 5591 bytes, result: 5591
+[129659.732509] omod5 read 0 bytes, result: 0
+[129669.464252] omod5 stat read 131072 bytes, result: 110
+[129684.375133] omod5 ProcFS ToUpper normal shutdown.
+bash$ 
