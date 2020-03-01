@@ -1,0 +1,5 @@
+$ ../chkpatch.sh olegh_module2.c
+total: 0 errors, 0 warnings, 41 lines checked
+
+/home/olegh/gl-kernel-training-2018/04-KernelModule/2/olegh_module2.c has no obvious style problems and is ready for submission.
+$

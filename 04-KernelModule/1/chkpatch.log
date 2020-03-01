@@ -1,0 +1,5 @@
+$ ../chkpatch.sh olegh_first_module.c
+total: 0 errors, 0 warnings, 30 lines checked
+
+/home/olegh/gl-kernel-training-2018/04-KernelModule/1/olegh_first_module.c has no obvious style problems and is ready for submission.
+$ 
