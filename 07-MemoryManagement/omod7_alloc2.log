@@ -1,0 +1,76 @@
+$ 
+$ sudo insmod omod7_alloc.ko
+$ cp Makefile /sys/class/omod7/tolower 
+$ cp README.md /sys/class/omod7/tolower 
+$ cp chkpatch.sh /sys/class/omod7/tolower 
+$ cat /sys/class/omod7/tolower 
+#!/bin/bash
+
+curdir=$(pwd)
+cd ~/kernel/linux
+./scripts/checkpatch.pl --no-tree --no-signoff --ignore long_line,long_line_comment,long_line_string -f $curdir/$1
+cd $curdir
+# memory management
+
+## homework
+
+1. update uppercase converter from the [lesson #05 (interfaces)](/05-interfaces) to dynamically allocate memory for each writing  using slab allocator.
+2. update the module to preserve all previously written values:
+    * consecuent readings without writing should return converted values in a row starting from the last one.
+3. transform the module to use memory pool for allocation.
+4. implement dynamic changing of buffer size:
+    * set it to the size of the first written value (aligned to the nearest power of 2);
+    * when written value exeeds element size - create new pool and move all existent elements to it.
+obj-m+=omod7_alloc.o
+all:
+    make -c /lib/modules/$(shell uname -r)/build/ m=$(pwd) modules
+clean:
+    make -c /lib/modules/$(shell uname -r)/build/ m=$(pwd) clean
+$ dmesg
+[  588.435810] omod7 SysFS ToLower normal shutdown.
+[  594.522620] omod7 SysFS ToLower v3 startup...
+[  594.522645] omod7 SysFS ToLower module loaded.
+[  601.941532] omod7 add block0 for fragment (159 bytes)
+[  601.941536] omod7 store 159 bytes
+[  606.921629] omod7 add block0 for fragment (209 bytes)
+[  606.921634] omod7 add next block (209 bytes)
+[  606.921635] omod7 add next block (209 bytes)
+[  606.921636] omod7 add next block (28 bytes)
+[  606.921637] omod7 store 655 bytes
+[  611.369533] omod7 add block0 for fragment (171 bytes)
+[  611.369537] omod7 store 171 bytes
+[  617.305510] omod7 show (s=985)
+$ echo "" > /sys/class/omod7/tolower 
+$ dmesg
+[  588.435810] omod7 SysFS ToLower normal shutdown.
+[  594.522620] omod7 SysFS ToLower v3 startup...
+[  594.522645] omod7 SysFS ToLower module loaded.
+[  601.941532] omod7 add block0 for fragment (159 bytes)
+[  601.941536] omod7 store 159 bytes
+[  606.921629] omod7 add block0 for fragment (209 bytes)
+[  606.921634] omod7 add next block (209 bytes)
+[  606.921635] omod7 add next block (209 bytes)
+[  606.921636] omod7 add next block (28 bytes)
+[  606.921637] omod7 store 655 bytes
+[  611.369533] omod7 add block0 for fragment (171 bytes)
+[  611.369537] omod7 store 171 bytes
+[  617.305510] omod7 show (s=985)
+[  640.259978] omod7 free all!
+$ sudo rmmod omod7_alloc 
+$ dmesg
+[  588.435810] omod7 SysFS ToLower normal shutdown.
+[  594.522620] omod7 SysFS ToLower v3 startup...
+[  594.522645] omod7 SysFS ToLower module loaded.
+[  601.941532] omod7 add block0 for fragment (159 bytes)
+[  601.941536] omod7 store 159 bytes
+[  606.921629] omod7 add block0 for fragment (209 bytes)
+[  606.921634] omod7 add next block (209 bytes)
+[  606.921635] omod7 add next block (209 bytes)
+[  606.921636] omod7 add next block (28 bytes)
+[  606.921637] omod7 store 655 bytes
+[  611.369533] omod7 add block0 for fragment (171 bytes)
+[  611.369537] omod7 store 171 bytes
+[  617.305510] omod7 show (s=985)
+[  640.259978] omod7 free all!
+[  648.388985] omod7 SysFS ToLower normal shutdown.
+$ 

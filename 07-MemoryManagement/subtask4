@@ -1,0 +1,2 @@
+has no sense in my implementation. Because module uses lists and has no limitation in data size.
+The only limit is PAGE_SIZE for sysfs data show
